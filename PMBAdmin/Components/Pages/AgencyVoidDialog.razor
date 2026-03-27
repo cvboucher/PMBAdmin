@@ -1,0 +1,98 @@
+@inject IDbContextFactory<PMBContext> DbFactory
+@inject DialogService DialogService
+
+<RadzenTemplateForm Data="_model" Submit="@((AgencyVoid _) => SaveAsync())">
+    <RadzenStack Gap="0.75rem">
+        <RadzenFormField Text="Agency" AllowFloatingLabel="false">
+            <RadzenDropDown Data="_agencies" TextProperty="Agency1" ValueProperty="AgencyId" @bind-Value="_model.AgencyId" Style="width: 100%" AllowFiltering="true" AllowClear="true" />
+        </RadzenFormField>
+        <RadzenFormField Text="From Status" AllowFloatingLabel="false">
+            <RadzenDropDown Data="_statuses" TextProperty="Status1" ValueProperty="StatusId" @bind-Value="_model.FromStatusId" Style="width: 100%" AllowFiltering="true" AllowClear="true" />
+        </RadzenFormField>
+        <RadzenFormField Text="To Status" AllowFloatingLabel="false">
+            <RadzenDropDown Data="_statuses" TextProperty="Status1" ValueProperty="StatusId" @bind-Value="_model.ToStatusId" Style="width: 100%" AllowFiltering="true" AllowClear="true" />
+        </RadzenFormField>
+
+        <RadzenFormField Text="Transaction Action" AllowFloatingLabel="false">
+            <RadzenRadioButtonList Data="_transactionActions" TextProperty="Text" ValueProperty="Value" @bind-Value="_model.TransactionAction" />
+        </RadzenFormField>
+
+        <RadzenFormField Text="Fee Action" AllowFloatingLabel="false">
+            <RadzenRadioButtonList Data="_feeActions" TextProperty="Text" ValueProperty="Value" @bind-Value="_model.FeeAction" />
+        </RadzenFormField>
+
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center">
+            <RadzenCheckBox @bind-Value="_model.IsInactive" />
+            <RadzenLabel Text="Inactive" />
+        </RadzenStack>
+    </RadzenStack>
+
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" Gap="0.5rem" class="rz-mt-3">
+        <AuthorizeView Context="authContext" Policy="@AppPermissions.AgencyVoidsManage">
+            <RadzenButton Text="Delete" ButtonStyle="ButtonStyle.Danger" Click="DeleteAsync" Visible="@(_model.AgencyVoidId != 0)" />
+            <RadzenButton Text="Save" ButtonStyle="ButtonStyle.Primary" ButtonType="ButtonType.Submit" />
+        </AuthorizeView>
+        <RadzenButton Text="Cancel" ButtonStyle="ButtonStyle.Light" Click="() => DialogService.Close()" />
+    </RadzenStack>
+</RadzenTemplateForm>
+
+@code {
+    [Parameter] public int? AgencyVoidId { get; set; }
+
+    private PMBContext? _db;
+    private AgencyVoid _model = new() { TransactionAction = "N", FeeAction = "N" };
+    private List<Agency> _agencies = [];
+    private List<Status> _statuses = [];
+
+    private readonly List<ActionOption> _transactionActions =
+    [
+        new("None", "N"),
+        new("Void", "V"),
+        new("Delete", "D"),
+    ];
+
+    private readonly List<ActionOption> _feeActions =
+    [
+        new("None", "N"),
+        new("Reverse", "R"),
+        new("Delete", "D"),
+    ];
+
+    protected override async Task OnInitializedAsync()
+    {
+        _db = await DbFactory.CreateDbContextAsync();
+        _agencies = await _db.Agencies.AsNoTracking().OrderBy(x => x.Agency1).ToListAsync();
+        _statuses = await _db.Statuses.AsNoTracking().OrderBy(x => x.Status1).ToListAsync();
+
+        if (AgencyVoidId.HasValue)
+        {
+            var existing = await _db.AgencyVoids.FirstOrDefaultAsync(x => x.AgencyVoidId == AgencyVoidId.Value);
+            if (existing != null)
+                _model = existing;
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        if (_model.AgencyVoidId == 0)
+            _db!.AgencyVoids.Add(_model);
+        else
+            _db!.AgencyVoids.Update(_model);
+
+        await _db!.SaveChangesAsync();
+        DialogService.Close(true);
+    }
+
+    private async Task DeleteAsync()
+    {
+        var confirmed = await DialogService.Confirm("Delete this agency void?", "Confirm",
+            new ConfirmOptions { OkButtonText = "Delete", CancelButtonText = "Cancel" });
+        if (confirmed != true) return;
+
+        _db!.AgencyVoids.Remove(_model);
+        await _db.SaveChangesAsync();
+        DialogService.Close(true);
+    }
+
+    private sealed record ActionOption(string Text, string Value);
+}

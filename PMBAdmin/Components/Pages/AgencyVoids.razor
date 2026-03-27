@@ -1,0 +1,108 @@
+@page "/agency-voids"
+@page "/agency_voids"
+@attribute [Authorize(Policy = AppPermissions.AgencyVoidsView)]
+
+@inject IDbContextFactory<PMBContext> DbFactory
+@inject DialogService DialogService
+
+<PageTitle>Agency Voids</PageTitle>
+
+<RadzenCard>
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" class="rz-mb-3">
+        <RadzenText Text="Agency Voids" Style="font-weight: 600;" />
+        <AuthorizeView Policy="@AppPermissions.AgencyVoidsManage">
+            <RadzenButton Text="Add" Icon="add_circle" ButtonStyle="ButtonStyle.Primary" Click="AddAsync" />
+        </AuthorizeView>
+    </RadzenStack>
+
+    <AppDataGrid @ref="_grid" TItem="AgencyVoid" Data="_query" RowSelect="OnRowSelect">
+        <Columns>
+            <RadzenDataGridColumn TItem="AgencyVoid" Property="Agency.Agency1" Title="Agency">
+                <FilterTemplate>
+                    <RadzenDropDown Data="_agencyNames"
+                                    Value="@context.FilterValue"
+                                    Change="@(value => { context.FilterValue = value; _grid!.FirstPage(true); })"
+                                    AllowFiltering="true" AllowClear="true" Style="width: 100%" />
+                </FilterTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="AgencyVoid" Property="FromStatus.Status1" Title="From Status">
+                <FilterTemplate>
+                    <RadzenDropDown Data="_statusNames"
+                                    Value="@context.FilterValue"
+                                    Change="@(value => { context.FilterValue = value; _grid!.FirstPage(true); })"
+                                    AllowFiltering="true" AllowClear="true" Style="width: 100%" />
+                </FilterTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="AgencyVoid" Property="ToStatus.Status1" Title="To Status">
+                <FilterTemplate>
+                    <RadzenDropDown Data="_statusNames"
+                                    Value="@context.FilterValue"
+                                    Change="@(value => { context.FilterValue = value; _grid!.FirstPage(true); })"
+                                    AllowFiltering="true" AllowClear="true" Style="width: 100%" />
+                </FilterTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="AgencyVoid" Property="TransactionAction" Title="Transaction Action" Width="160px">
+                <Template>@MapAction(context.TransactionAction)</Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="AgencyVoid" Property="FeeAction" Title="Fee Action" Width="140px">
+                <Template>@MapFeeAction(context.FeeAction)</Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="AgencyVoid" Property="IsInactive" Title="Inactive" Width="120px">
+                <Template>@(context.IsInactive ? "Yes" : "No")</Template>
+            </RadzenDataGridColumn>
+        </Columns>
+    </AppDataGrid>
+</RadzenCard>
+
+@code {
+    private PMBContext? _db;
+    private AppDataGrid<AgencyVoid>? _grid;
+    private IQueryable<AgencyVoid>? _query;
+    private List<string> _agencyNames = [];
+    private List<string> _statusNames = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        _db = await DbFactory.CreateDbContextAsync();
+
+        _query = _db.AgencyVoids
+            .AsNoTracking()
+            .Include(x => x.Agency)
+            .Include(x => x.FromStatus)
+            .Include(x => x.ToStatus);
+
+        _agencyNames = [.. _db.Agencies.AsNoTracking().OrderBy(x => x.Agency1).Select(x => x.Agency1)];
+        _statusNames = [.. _db.Statuses.AsNoTracking().OrderBy(x => x.Status1).Select(x => x.Status1)];
+    }
+
+    private async Task AddAsync()
+    {
+        var result = await DialogService.OpenDialogAsync<AgencyVoidDialog>("Add Agency Void");
+        if (result is true)
+            _db?.ChangeTracker.Clear();
+    }
+
+    private async Task OnRowSelect(AgencyVoid row)
+    {
+        var result = await DialogService.OpenDialogAsync<AgencyVoidDialog>("Edit Agency Void",
+            new Dictionary<string, object?> { ["AgencyVoidId"] = row.AgencyVoidId });
+        if (result is true)
+            _db?.ChangeTracker.Clear();
+    }
+
+    private static string MapAction(string? code) => code switch
+    {
+        "N" => "None",
+        "V" => "Void",
+        "D" => "Delete",
+        _ => code ?? string.Empty
+    };
+
+    private static string MapFeeAction(string? code) => code switch
+    {
+        "N" => "None",
+        "R" => "Reverse",
+        "D" => "Delete",
+        _ => code ?? string.Empty
+    };
+}
