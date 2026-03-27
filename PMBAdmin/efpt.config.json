@@ -1,0 +1,1109 @@
+﻿{
+   "CodeGenerationMode": 6,
+   "ContextClassName": "PMBContext",
+   "ContextNamespace": "Data",
+   "FilterSchemas": false,
+   "IncludeConnectionString": false,
+   "IrregularWords": null,
+   "MinimumProductVersion": "2.6.1224",
+   "ModelNamespace": "Entities",
+   "OutputContextPath": "Data\\Generated",
+   "OutputPath": "Entities\\Generated",
+   "PluralRules": null,
+   "PreserveCasingWithRegex": true,
+   "ProjectRootNamespace": "PMBAdmin",
+   "Schemas": null,
+   "SelectedHandlebarsLanguage": 2,
+   "SelectedToBeGenerated": 0,
+   "SingularRules": null,
+   "T4TemplatePath": null,
+   "Tables": [
+      {
+         "Name": "[dbo].[AdminReview]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[AdminReviewAgencyConfig]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[AdminReviewAgencyStatus]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[AdminReviewConfig]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[AdminReviewError]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[AdminReviewResolutionText]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[AdminReviewStatus]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Agency]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[AgencyFee]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[AgencyVoid]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[BatchJob]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[BatchJobType]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[CashierBatch]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[CashierClose]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[CashierCustomer]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[CashierTransDtl]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[CashierTransHdr]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[CashnetConfig]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[CashnetLog]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[CashnetPaymentCode]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[CashnetPaymentTransType]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[CashnetTransType]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[CashRegister]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[CheckoutError]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[CheckoutItem]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[CheckoutResponse]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[CheckoutSearch]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Citation]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[CitationDMVHold]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[CitationFee]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[CitationNote]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[CitationPicture]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[CitationRegisteredOwner]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[CitationStatus]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[CitationTransaction]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[CitationVoid]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Color]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Comment]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[DMVCode]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[DMVCodeType]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[DMVHoldExp]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[DMVHoldJob]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[DMVMonthlyCitationsUpdImp]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[DMVMonthlyCitationsUpdJob]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[DMVPays]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[DoNotCite]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[DoNotCiteLot]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[DUAL]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[EmailAddress]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[EmailGroup]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[EmailLog]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[EmailLogHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[EmailLogRecipient]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[EmailTemplate]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[FDGGConfig]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[FDGGTranCitation]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[FDGGTransaction]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[FeeGroup]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[FeeGroupType]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[FeeType]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[GlobalConfig]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[IntentDtl]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[IntentHdr]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[LicenseType]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Location]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Menu]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Note]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Officer]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[PDA]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[PDACitation]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[PDACitationPicture]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[PMBMenu]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[PMBUser]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[PMBUserAgency]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[PMBUserSecurityRole]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ReducedBailAmount]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ReducedBailIncrement]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[RegisteredOwnerImp]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[RegisteredOwnerInqExp]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[RegisteredOwnerJob]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[RolePermission]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[SalAppeal]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[SalAppealLetter]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[SalCitation]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[SalCiteCharge]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[SalHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[SalLetter]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[SalNotice]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[SalPayment]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[SalRoHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[SalVehHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[SalViolation]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[SecurityObject]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[SecurityRole]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[SecurityRoleObject]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[SecurityRoleSubObject]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[SecuritySubObject]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ShoppingCart]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[State]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[States]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Status]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[StatusAgingOverride]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[StatusBailAmount]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[StatusFee]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[TransactionGroup]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[TransactionGroupType]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[TransactionType]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[VehicleMake]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Violation]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ViolationBailAmount]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[VoidReason]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[WebID]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[WebServiceErrorLog]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[ActiveAgencySecurityVw]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[ActiveAgencyVw]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[ActivePMBUserVw]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[AdminReviewListVw]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[AdminReviewVw]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[AgencySecurityVw]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[AgencyStatementVw]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[BailScheduleVw]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[CashierCustomerSearchVw]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[CitationBalanceVw]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[CitationFeeReverseVw]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[CitationLookupVw]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[CitationVw]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[CreditCardExpYearsVw]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[DailyCitationFeedRptVw]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[DMVHoldJobVw]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[DMVMonthlyCitationsUpdJobVw]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[DoNotCiteListVw]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[DoNotCiteLotListVw]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[EmailLogVw]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[FeeGroupTypeVw]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[FeeTypeDependListboxVw]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[HitListVw]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[IntentDtlVw]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[IntentHdrVw]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[LocationDependListboxVw]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[MenuHierarchyVw]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[OfficerDependListboxVw]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[PayOnlineCitationVw]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[PayOnlineShoppingCartVw]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[PMBMenuVw]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[PMBUserAgencySecurityVw]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[ReducedBailDependListboxVw]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[ReducedBailIncrementSecurityVw]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[RegisteredOwnerJobInProcessVw]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[RegisteredOwnerJobVw]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[RptCollectedFees]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[StateVw]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[TicketRevFeeSmryVw]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[TicketRevPmtSmryVw]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[TicketsForCollectionsVw]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[TransactionGroupTypeVw]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[TransactionTypeDependListboxVw]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[UsedCitationNumberVw]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[UserSecurityRptVw]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[ViolationBailLevel1Vw]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[ViolationDependListboxVw]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[ViolationVw]",
+         "ObjectType": 3
+      },
+      {
+         "Name": "[dbo].[AdminReviewByReviewerDetailRpt]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[AdminReviewByReviewerSummaryRpt]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[AdminReviewDetailRpt]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[AdminReviewSummaryRpt]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[AgencyActivityDetailRpt]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[AgencyActivitySummaryRpt]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[AgencyStatementDetailV3]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[AgencyStatementRpt]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[AgencyStatementRptSmryV2]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[AgencyStatementRptV2]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[AgencyStatementSmryV3]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[CurrentDMVHoldsRpt]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[DAL_AdminReviewVw_GetByAdminReviewID]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[DAL_Agency_GetByCourtCodeInactive]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[DAL_Citation_GetByCitationNumber]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[DAL_Citation_GetDMVHoldAdds]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[DAL_Citation_GetDMVHoldDeletes]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[DAL_Citation_GetWithBalanceDue]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[DAL_CitationBalanceVw_GetByCitationID]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[DAL_CitationFee_GetUncollected]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[DAL_CitationFeeReverseVw_GetByCitationID]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[DAL_CitationRegisteredOwner_GetCurrent]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[DAL_CitationStatus_GetNewest]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[DAL_CitationStatus_GetOldest]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[DAL_CitationStatus_GetPrior]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[DAL_CitationTransaction_GetMostRecentByCitationID]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[DAL_CitationVw_GetByCitationID]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[DAL_CitationVw_GetROTicketsNotImp]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[DAL_DailyCitationFeedRptVw_GetByRptParams]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[DAL_DMVHoldExp_GetForFileCreateByJobId]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[DAL_DoNotCite_GetByAgencyIDForHandheld]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[DAL_DoNotCiteListVw_GetByAgencyIDForHandheld]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[DAL_DoNotCiteLotListVw_GetByAgencyIDForHandheld]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[DAL_DUAL_GetAgencyStmtTktCounts]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[DAL_HitListVw_GetByAgencyID]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[DAL_MenuHierarchyVw_GetByLogin]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[DAL_Officer_GetWithCallIDByAgencyID]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[DAL_PayOnlineCitationVw_GetBySessionKey]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[DAL_PDACitationPicture_GetMaxImgSeq]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[DAL_SecurityRoleObject_GetByUserIDObjectID]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[DAL_SecurityRoleSubObject_GetByUserIDObjectIDSubObjectID]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[DAL_Status_GetActive]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[DAL_TicketRevFeeSmryVw_GetByAgencyDateRange]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[DAL_TicketRevPmtSmryVw_GetByAgencyDateRange]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[DAL_UsedCitationNumberVw_GetByPDAID]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[DAL_UserSecurityRptVw_GetByMultiParams]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[DAL_ViolationBailAmount_GetByViolationIDBailLevelEffDt]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[DAL_ViolationBailLevel1Vw_GetByAgencyID]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[GetActiveOfficersForDropList]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[GetAdminReviewsForPerson]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[InsertCitationTransaction]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[InsertReturnedCheckFee]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[IntentsRpt]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[LicensePlateHistoryRpt]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[OutOfStateRpt]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[PaidAtDMVDetailRpt]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[PaidAtDMVSummaryRpt]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[ParkingMgmtChargebackRpt]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[RegisteredOwnerComparisonRpt]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[RptCollectedFees_GetDetail]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[RptCollectedFees_GetSummary]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[RptCollectedFeesByMonth_GetSummary]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[RptPostedFeesSummary]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[SecurityRoleSubObject_InsertUpdate]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[SecurityRoleSubObject_Select]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[TicketActivityDetailRpt]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[TicketActivitySummaryRpt]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[TicketAgingDetailRpt]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[TicketAgingSummaryRpt]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[TicketCountByLicensePlateRpt]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[TicketCountsByAgencyHandheldRpt]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[TicketCountsByAgencyRpt]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[TicketCountsByOfficerRpt]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[TicketDetailByViolationRpt]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[TicketDetailRpt]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[TicketExtractRpt]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[TicketHoldsDetailRpt]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[TicketHoldsSummaryRpt]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[TicketsByLocationDetailRpt]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[TicketsByLocationSummaryRpt]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[TicketStatusDetailRpt]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[TicketStatusSummaryRpt]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[TicketSummaryByViolationRpt]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[TicketTransactionDetailRpt]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[TicketTransactionSummaryRpt]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[uspRebuildIndexes]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[ViolationDetailRpt]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[ViolationSummaryRpt]",
+         "ObjectType": 1
+      },
+      {
+         "Name": "[dbo].[AccruedFees]",
+         "ObjectType": 2
+      },
+      {
+         "Name": "[dbo].[AgeColumn]",
+         "ObjectType": 2
+      },
+      {
+         "Name": "[dbo].[beginning_of_day]",
+         "ObjectType": 2
+      },
+      {
+         "Name": "[dbo].[CitationBalance]",
+         "ObjectType": 2
+      },
+      {
+         "Name": "[dbo].[CitationBalanceDue]",
+         "ObjectType": 2
+      },
+      {
+         "Name": "[dbo].[end_of_day]",
+         "ObjectType": 2
+      },
+      {
+         "Name": "[dbo].[GetBailLevel]",
+         "ObjectType": 2
+      },
+      {
+         "Name": "[dbo].[GetCitationBailAmt]",
+         "ObjectType": 2
+      },
+      {
+         "Name": "[dbo].[GetCitationBailRedAmt]",
+         "ObjectType": 2
+      },
+      {
+         "Name": "[dbo].[GetCitationBailRedCancelAmt]",
+         "ObjectType": 2
+      },
+      {
+         "Name": "[dbo].[GetCitationTransactionTotal]",
+         "ObjectType": 2
+      },
+      {
+         "Name": "[dbo].[GetCitationTransAmt]",
+         "ObjectType": 2
+      },
+      {
+         "Name": "[dbo].[GetReceiptNumber]",
+         "ObjectType": 2
+      },
+      {
+         "Name": "[dbo].[GetTicketPaidDate]",
+         "ObjectType": 2
+      },
+      {
+         "Name": "[dbo].[GetViolationBailAmt]",
+         "ObjectType": 2
+      },
+      {
+         "Name": "[dbo].[PostedFees]",
+         "ObjectType": 2
+      }
+   ],
+   "UiHint": null,
+   "UncountableWords": null,
+   "UseAsyncStoredProcedureCalls": true,
+   "UseBoolPropertiesWithoutDefaultSql": true,
+   "UseDatabaseNames": false,
+   "UseDatabaseNamesForRoutines": true,
+   "UseDateOnlyTimeOnly": true,
+   "UseDbContextSplitting": false,
+   "UseDecimalDataAnnotationForSprocResult": true,
+   "UseFluentApiOnly": false,
+   "UseHandleBars": false,
+   "UseHierarchyId": false,
+   "UseInflector": true,
+   "UseInternalAccessModifiersForSprocsAndFunctions": false,
+   "UseLegacyPluralizer": false,
+   "UseManyToManyEntity": false,
+   "UseNoDefaultConstructor": false,
+   "UseNoNavigations": false,
+   "UseNoObjectFilter": false,
+   "UseNodaTime": false,
+   "UseNullableReferences": true,
+   "UsePrefixNavigationNaming": false,
+   "UseSchemaFolders": false,
+   "UseSchemaNamespaces": false,
+   "UseSpatial": false,
+   "UseT4": false,
+   "UseT4Split": false
+}
