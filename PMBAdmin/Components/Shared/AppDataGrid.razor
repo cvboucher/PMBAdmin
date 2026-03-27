@@ -1,0 +1,32 @@
+@typeparam TItem
+@inherits RadzenDataGrid<TItem>
+
+@{ base.BuildRenderTree(__builder); }
+
+@code {
+    public override async Task SetParametersAsync(ParameterView parameters)
+    {
+        if (!parameters.TryGetValue<bool>(nameof(AllowFiltering), out _))
+            AllowFiltering = true;
+
+        if (!parameters.TryGetValue<FilterMode>(nameof(FilterMode), out _))
+            FilterMode = FilterMode.SimpleWithMenu;
+
+        if (!parameters.TryGetValue<bool>(nameof(AllowSorting), out _))
+            AllowSorting = true;
+
+        if (!parameters.TryGetValue<bool>(nameof(AllowPaging), out _))
+            AllowPaging = true;
+
+        if (!parameters.TryGetValue<int>(nameof(PageSize), out _))
+            PageSize = 20;
+
+        if (!parameters.TryGetValue<Density>(nameof(Density), out _))
+            Density = Density.Compact;
+
+        if (!parameters.TryGetValue<Density>(nameof(PagerHorizontalAlign), out _))
+            PagerHorizontalAlign = HorizontalAlign.Left;
+
+        await base.SetParametersAsync(parameters);
+    }
+}

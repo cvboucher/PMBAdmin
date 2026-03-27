@@ -1,0 +1,110 @@
+@using System.Security.Claims
+@using PMBAdmin.Data
+
+<RadzenPanelMenu Style="height: 100%;">
+    @if (_menuRoots.Count > 0)
+    {
+        foreach (var item in _menuRoots)
+        {
+            @RenderNode(item)
+        }
+    }
+    else
+    {
+        <RadzenPanelMenuItem Text="Home" Path="/" Icon="home" />
+    }
+</RadzenPanelMenu>
+
+@code {
+    [CascadingParameter] private Task<AuthenticationState> AuthStateTask { get; set; } = default!;
+    [Inject] private IDbContextFactory<PMBContext> DbFactory { get; set; } = default!;
+
+    private readonly List<MenuNode> _menuRoots = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateTask;
+        var login = authState.User.Identity?.Name;
+        if (string.IsNullOrWhiteSpace(login))
+            return;
+
+        await using var db = await DbFactory.CreateDbContextAsync();
+        var items = await db.Procedures.DAL_MenuHierarchyVw_GetByLoginAsync(login) ?? [];
+
+        var nodes = items
+            .Where(x => x.MenuID.HasValue)
+            .Select(x => new MenuNode
+            {
+                MenuId = x.MenuID!.Value,
+                ParentMenuId = x.ParentMenuID,
+                Caption = x.Caption?.Trim() ?? string.Empty,
+                PathAndUrl = x.PathAndUrl?.Trim() ?? string.Empty
+            })
+            .ToList();
+
+        var lookup = nodes.ToDictionary(x => x.MenuId, x => x);
+        foreach (var node in nodes)
+        {
+            if (node.ParentMenuId.HasValue && lookup.TryGetValue(node.ParentMenuId.Value, out var parent))
+                parent.Children.Add(node);
+        }
+
+        _menuRoots.AddRange(nodes.Where(x => !x.ParentMenuId.HasValue || x.ParentMenuId == 0)
+            .OrderBy(x => x.Caption));
+    }
+
+    private RenderFragment RenderNode(MenuNode node) => builder =>
+    {
+        var path = MapPath(node.PathAndUrl);
+        var hasChildren = node.Children.Count > 0;
+
+        builder.OpenComponent<RadzenPanelMenuItem>(0);
+        builder.AddAttribute(1, "Text", node.Caption);
+
+        if (!string.IsNullOrWhiteSpace(path))
+            builder.AddAttribute(2, "Path", path);
+
+        if (hasChildren)
+        {
+            builder.AddAttribute(3, "ChildContent", (RenderFragment)(childBuilder =>
+            {
+                foreach (var child in node.Children.OrderBy(x => x.Caption))
+                {
+                    childBuilder.AddContent(0, RenderNode(child));
+                }
+            }));
+        }
+
+        builder.CloseComponent();
+    };
+
+    private static string? MapPath(string? pathAndUrl)
+    {
+        if (string.IsNullOrWhiteSpace(pathAndUrl))
+            return null;
+
+        var cleaned = pathAndUrl.Trim();
+        var queryIndex = cleaned.IndexOf('?', StringComparison.Ordinal);
+        if (queryIndex >= 0)
+            cleaned = cleaned[..queryIndex];
+
+        cleaned = cleaned.Replace("\\", "/");
+        cleaned = cleaned.TrimStart('~', '/');
+
+        if (cleaned.EndsWith(".aspx", StringComparison.OrdinalIgnoreCase))
+            cleaned = cleaned[..^5];
+        if (cleaned.EndsWith(".html", StringComparison.OrdinalIgnoreCase))
+            cleaned = cleaned[..^5];
+
+        return "/" + cleaned;
+    }
+
+    private sealed class MenuNode
+    {
+        public int MenuId { get; set; }
+        public int? ParentMenuId { get; set; }
+        public string Caption { get; set; } = string.Empty;
+        public string? PathAndUrl { get; set; }
+        public List<MenuNode> Children { get; } = new();
+    }
+}

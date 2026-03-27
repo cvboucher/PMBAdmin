@@ -1,0 +1,61 @@
+namespace PMBAdmin.Authorization;
+
+/// <summary>
+/// Defines all application permissions.
+/// Each page has a View (read-only) and Manage (insert/update/delete) permission.
+/// Permissions are stored as claims in AspNetRoleClaims with ClaimType = "Permission".
+/// </summary>
+public static class AppPermissions
+{
+    public const string ClaimType = "Permission";
+    public const string SuperUserClaimType = "SuperUser";
+
+    // Administration
+    public const string UsersView = "Users.View";
+    public const string UsersManage = "Users.Manage";
+    public const string RolesView = "Roles.View";
+    public const string RolesManage = "Roles.Manage";
+
+    // Reports (placeholder set - expand as reports are implemented)
+    public const string ReportsView = "Reports.View";
+
+    /// <summary>
+    /// All defined permissions for enumeration (e.g., admin UI checkboxes).
+    /// Expand this list as pages are converted.
+    /// </summary>
+    public static IReadOnlyList<PermissionDefinition> All { get; } =
+    [
+        new("Administration", UsersView, "Users - View"),
+        new("Administration", UsersManage, "Users - Manage"),
+        new("Administration", RolesView, "Roles - View"),
+        new("Administration", RolesManage, "Roles - Manage"),
+        new("Reports", ReportsView, "Reports - View"),
+    ];
+
+    /// <summary>
+    /// Given a Manage permission (e.g. "Users.Manage"), returns the corresponding View permission, or null.
+    /// </summary>
+    public static string? GetViewPermission(string managePermission)
+    {
+        if (!managePermission.EndsWith(".Manage"))
+            return null;
+        var viewValue = managePermission.Replace(".Manage", ".View");
+        return All.Any(p => p.Value == viewValue) ? viewValue : null;
+    }
+
+    /// <summary>
+    /// Given a View permission (e.g. "Users.View"), returns the corresponding Manage permission, or null.
+    /// </summary>
+    public static string? GetManagePermission(string viewPermission)
+    {
+        if (!viewPermission.EndsWith(".View"))
+            return null;
+        var manageValue = viewPermission.Replace(".View", ".Manage");
+        return All.Any(p => p.Value == manageValue) ? manageValue : null;
+    }
+}
+
+/// <summary>
+/// Describes a single permission for display in admin UI.
+/// </summary>
+public record PermissionDefinition(string Category, string Value, string DisplayName);

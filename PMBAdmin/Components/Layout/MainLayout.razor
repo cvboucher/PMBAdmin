@@ -1,10 +1,50 @@
 ﻿@inherits LayoutComponentBase
 
-@Body
+<RadzenLayout Style="min-height: 100vh;">
+    <RadzenHeader class="no-print">
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" Class="rz-p-2">
+            <RadzenText Text="PMB Admin" Style="font-weight: 600;" />
+            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
+                <AuthorizeView>
+                    <Authorized>
+                        @{ var displayName = context.User.FindFirst("DisplayName")?.Value; }
+                        <RadzenMenu>
+                            <RadzenMenuItem Text="@(string.IsNullOrWhiteSpace(displayName) ? context.User.Identity?.Name : displayName)" Icon="account_circle">
+                                <RadzenMenuItem Text="Profile" Icon="person" Path="Account/Manage" />
+                                <RadzenMenuItem Text="Change Password" Icon="lock" Path="Account/Manage/ChangePassword" />
+                                <RadzenMenuItem Text="External Logins" Icon="link" Path="Account/Manage/ExternalLogins" />
+                            </RadzenMenuItem>
+                        </RadzenMenu>
+                        <form method="post" action="Account/Logout">
+                            <AntiforgeryToken />
+                            <input type="hidden" name="returnUrl" value="" />
+                            <RadzenButton Text="Logout" Icon="logout" ButtonStyle="ButtonStyle.Light" ButtonType="ButtonType.Submit" />
+                        </form>
+                    </Authorized>
+                </AuthorizeView>
+            </RadzenStack>
+        </RadzenStack>
+    </RadzenHeader>
+
+    <AuthorizeView Policy="Require2fa">
+        <RadzenSidebar class="no-print" Style="width: 280px;" Expanded="true">
+            <NavMenu @rendermode="InteractiveServer" />
+        </RadzenSidebar>
+    </AuthorizeView>
+
+    <RadzenBody>
+        <div class="rz-p-4">
+            @Body
+        </div>
+    </RadzenBody>
+</RadzenLayout>
+
+<RadzenDialog />
+<RadzenNotification />
+<RadzenComponents @rendermode="InteractiveServer" />
 
 <div id="blazor-error-ui" data-nosnippet>
     An unhandled error has occurred.
     <a href="." class="reload">Reload</a>
     <span class="dismiss">🗙</span>
 </div>
-<RadzenComponents @rendermode="InteractiveServer" />
