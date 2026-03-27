@@ -16,6 +16,10 @@ public static class AppPermissions
     public const string RolesView = "Roles.View";
     public const string RolesManage = "Roles.Manage";
 
+    // Configuration
+    public const string AgenciesView = "Agencies.View";
+    public const string AgenciesManage = "Agencies.Manage";
+
     /// <summary>
     /// All defined permissions for enumeration (e.g., admin UI checkboxes).
     /// Expand this list as pages are converted.
@@ -26,6 +30,9 @@ public static class AppPermissions
         new("Administration", UsersManage, "Users - Manage"),
         new("Administration", RolesView, "Roles - View"),
         new("Administration", RolesManage, "Roles - Manage"),
+
+        new("Configuration", AgenciesView, "Agencies - View"),
+        new("Configuration", AgenciesManage, "Agencies - Manage"),
     ];
 
     /// <summary>

@@ -1,0 +1,71 @@
+@page "/agencies"
+@page "/agency_list"
+@attribute [Authorize(Policy = AppPermissions.AgenciesView)]
+
+@inject IDbContextFactory<PMBContext> DbFactory
+@inject DialogService DialogService
+
+<PageTitle>Agencies</PageTitle>
+
+<RadzenCard>
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" class="rz-mb-3">
+        <RadzenText Text="Agencies" Style="font-weight: 600;" />
+        <AuthorizeView Policy="@AppPermissions.AgenciesManage">
+            <RadzenButton Text="Add" Icon="add_circle" ButtonStyle="ButtonStyle.Primary" Click="AddAsync" />
+        </AuthorizeView>
+    </RadzenStack>
+
+    <AppDataGrid @ref="_grid" TItem="Agency" Data="_query" RowSelect="OnRowSelect">
+        <Columns>
+            <RadzenDataGridColumn TItem="Agency" Property="Agency1" Title="Agency" SortOrder="SortOrder.Ascending" />
+            <RadzenDataGridColumn TItem="Agency" Property="AgencyCode" Title="Code" />
+            <RadzenDataGridColumn TItem="Agency" Property="CourtCode" Title="Court Code" />
+            <RadzenDataGridColumn TItem="Agency" Property="Inactive" Title="Inactive" Width="120px">
+                <Template>@(context.Inactive ? "Yes" : "No")</Template>
+                <FilterTemplate>
+                    <RadzenDropDown Data="_inactiveOptions"
+                                    TextProperty="Text"
+                                    ValueProperty="Value"
+                                    Value="@context.FilterValue"
+                                    Change="@(value => { context.FilterValue = value; _grid!.FirstPage(true); })"
+                                    AllowClear="true" Style="width: 100%" />
+                </FilterTemplate>
+            </RadzenDataGridColumn>
+        </Columns>
+    </AppDataGrid>
+</RadzenCard>
+
+@code {
+    private PMBContext? _db;
+    private AppDataGrid<Agency>? _grid;
+    private IQueryable<Agency>? _query;
+
+    private readonly List<FilterOption<bool>> _inactiveOptions =
+    [
+        new("Active", false),
+        new("Inactive", true)
+    ];
+
+    protected override async Task OnInitializedAsync()
+    {
+        _db = await DbFactory.CreateDbContextAsync();
+        _query = _db.Agencies.AsNoTracking();
+    }
+
+    private async Task AddAsync()
+    {
+        var result = await DialogService.OpenDialogAsync<AgencyDialog>("Add Agency");
+        if (result is true)
+            _db?.ChangeTracker.Clear();
+    }
+
+    private async Task OnRowSelect(Agency row)
+    {
+        var result = await DialogService.OpenDialogAsync<AgencyDialog>("Edit Agency",
+            new Dictionary<string, object?> { ["AgencyId"] = row.AgencyId });
+        if (result is true)
+            _db?.ChangeTracker.Clear();
+    }
+
+    private sealed record FilterOption<T>(string Text, T Value);
+}

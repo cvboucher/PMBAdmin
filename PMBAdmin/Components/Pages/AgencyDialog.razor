@@ -1,0 +1,112 @@
+@inject IDbContextFactory<PMBContext> DbFactory
+@inject DialogService DialogService
+
+<RadzenTemplateForm Data="_model" Submit="@((Agency _) => SaveAsync())">
+    <RadzenStack Gap="0.75rem">
+        <RadzenFormField Text="Agency" AllowFloatingLabel="false">
+            <RadzenTextBox @bind-Value="_model.Agency1" Style="width: 100%" />
+        </RadzenFormField>
+        <RadzenFormField Text="Code" AllowFloatingLabel="false">
+            <RadzenTextBox @bind-Value="_model.AgencyCode" Style="width: 100%" />
+        </RadzenFormField>
+        <RadzenFormField Text="Contact Person" AllowFloatingLabel="false">
+            <RadzenTextBox @bind-Value="_model.ContactPerson" Style="width: 100%" />
+        </RadzenFormField>
+        <RadzenFormField Text="Phone" AllowFloatingLabel="false">
+            <RadzenTextBox @bind-Value="_model.Phone" Style="width: 100%" />
+        </RadzenFormField>
+        <RadzenFormField Text="Court Code" AllowFloatingLabel="false">
+            <RadzenTextBox @bind-Value="_model.CourtCode" Style="width: 100%" />
+        </RadzenFormField>
+        <RadzenFormField Text="Cashnet Item Code" AllowFloatingLabel="false">
+            <RadzenTextBox @bind-Value="_model.CashnetItemCode" Style="width: 100%" />
+        </RadzenFormField>
+        <RadzenFormField Text="Detail Code" AllowFloatingLabel="false">
+            <RadzenTextBox @bind-Value="_model.DetailCode" Style="width: 100%" />
+        </RadzenFormField>
+
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center">
+            <RadzenCheckBox @bind-Value="_model.Inactive" />
+            <RadzenLabel Text="Inactive" />
+        </RadzenStack>
+
+        <RadzenText Text="Admin Review Configuration" Style="font-weight: 600;" />
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center">
+            <RadzenCheckBox @bind-Value="_model.AllowAdminReview" />
+            <RadzenLabel Text="Allow Admin Review" />
+        </RadzenStack>
+        <RadzenFormField Text="Reduced Bail Cancellation Days" AllowFloatingLabel="false">
+            <RadzenNumeric @bind-Value="_model.ReducedBailCancellationDays" Style="width: 100%" />
+        </RadzenFormField>
+        <RadzenFormField Text="Max Dispute Days" AllowFloatingLabel="false">
+            <RadzenNumeric @bind-Value="_model.MaxDisupteDays" Style="width: 100%" />
+        </RadzenFormField>
+        <RadzenFormField Text="Void Days" AllowFloatingLabel="false">
+            <RadzenNumeric @bind-Value="_model.VoidDays" Style="width: 100%" />
+        </RadzenFormField>
+
+        <RadzenText Text="Features" Style="font-weight: 600;" />
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center">
+            <RadzenCheckBox @bind-Value="_model.EnablePermitLookup" />
+            <RadzenLabel Text="Enable Permit Lookup" />
+        </RadzenStack>
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center">
+            <RadzenCheckBox @bind-Value="_model.EnableCitationHistorySearch" />
+            <RadzenLabel Text="Enable Citation History Search" />
+        </RadzenStack>
+        <RadzenFormField Text="Parking Permits Campus Code" AllowFloatingLabel="false">
+            <RadzenTextBox @bind-Value="_model.CampusCode" Style="width: 100%" />
+        </RadzenFormField>
+        <RadzenFormField Text="Passport Operator ID" AllowFloatingLabel="false">
+            <RadzenTextBox @bind-Value="_model.PassportOperatorId" Style="width: 100%" />
+        </RadzenFormField>
+    </RadzenStack>
+
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" Gap="0.5rem" class="rz-mt-3">
+        <AuthorizeView Context="authContext" Policy="@AppPermissions.AgenciesManage">
+            <RadzenButton Text="Delete" ButtonStyle="ButtonStyle.Danger" Click="DeleteAsync" Visible="@(_model.AgencyId != 0)" />
+            <RadzenButton Text="Save" ButtonStyle="ButtonStyle.Primary" ButtonType="ButtonType.Submit" />
+        </AuthorizeView>
+        <RadzenButton Text="Cancel" ButtonStyle="ButtonStyle.Light" Click="() => DialogService.Close()" />
+    </RadzenStack>
+</RadzenTemplateForm>
+
+@code {
+    [Parameter] public int? AgencyId { get; set; }
+
+    private PMBContext? _db;
+    private Agency _model = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _db = await DbFactory.CreateDbContextAsync();
+        if (AgencyId.HasValue)
+        {
+            var existing = await _db.Agencies.FirstOrDefaultAsync(x => x.AgencyId == AgencyId.Value);
+            if (existing != null)
+                _model = existing;
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        if (_model.AgencyId == 0)
+            _db!.Agencies.Add(_model);
+        else
+            _db!.Agencies.Update(_model);
+
+        await _db!.SaveChangesAsync();
+        DialogService.Close(true);
+    }
+
+    private async Task DeleteAsync()
+    {
+        var confirmed = await DialogService.Confirm("Delete this agency?", "Confirm",
+            new ConfirmOptions { OkButtonText = "Delete", CancelButtonText = "Cancel" });
+        if (confirmed != true) return;
+
+        _db!.Agencies.Remove(_model);
+        await _db.SaveChangesAsync();
+        DialogService.Close(true);
+    }
+}
