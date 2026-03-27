@@ -1,0 +1,59 @@
+@page "/users"
+@page "/user_list"
+@attribute [Authorize(Policy = AppPermissions.UsersView)]
+
+@using Microsoft.AspNetCore.Identity
+
+@inject UserManager<ApplicationUser> UserManager
+@inject DialogService DialogService
+
+<PageTitle>Users</PageTitle>
+
+<RadzenCard>
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" class="rz-mb-3">
+        <RadzenText Text="Users" Style="font-weight: 600;" />
+        <AuthorizeView Policy="@AppPermissions.UsersManage">
+            <RadzenButton Text="Add" Icon="add_circle" ButtonStyle="ButtonStyle.Primary" Click="AddAsync" />
+        </AuthorizeView>
+    </RadzenStack>
+
+    <AppDataGrid TItem="ApplicationUser" Data="_users" RowSelect="OnRowSelect">
+        <Columns>
+            <RadzenDataGridColumn TItem="ApplicationUser" Property="UserName" Title="Username" SortOrder="SortOrder.Ascending" />
+            <RadzenDataGridColumn TItem="ApplicationUser" Property="Email" Title="Email" />
+            <RadzenDataGridColumn TItem="ApplicationUser" Property="DisplayName" Title="Display Name" />
+            <RadzenDataGridColumn TItem="ApplicationUser" Property="SuperUser" Title="Super User" Width="140px" />
+            <RadzenDataGridColumn TItem="ApplicationUser" Property="ViewAllAgencies" Title="View All Agencies" Width="180px" />
+            <RadzenDataGridColumn TItem="ApplicationUser" Property="EmailConfirmed" Title="Confirmed" Width="120px" />
+        </Columns>
+    </AppDataGrid>
+</RadzenCard>
+
+@code {
+    private List<ApplicationUser> _users = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _users = [.. UserManager.Users.OrderBy(u => u.UserName)];
+    }
+
+    private async Task AddAsync()
+    {
+        var result = await DialogService.OpenDialogAsync<UserDialog>("Add User");
+        if (result is true)
+            await LoadAsync();
+    }
+
+    private async Task OnRowSelect(ApplicationUser user)
+    {
+        var result = await DialogService.OpenDialogAsync<UserDialog>("Edit User",
+            new Dictionary<string, object?> { ["UserId"] = user.Id });
+        if (result is true)
+            await LoadAsync();
+    }
+}

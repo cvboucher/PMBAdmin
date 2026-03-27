@@ -1,0 +1,57 @@
+@page "/roles"
+@page "/security_role_list"
+
+@attribute [Authorize(Policy = AppPermissions.RolesView)]
+
+@using Microsoft.AspNetCore.Identity
+
+@inject IServiceScopeFactory ScopeFactory
+@inject DialogService DialogService
+
+<PageTitle>Roles</PageTitle>
+
+<RadzenCard>
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" class="rz-mb-3">
+        <RadzenText Text="Roles" Style="font-weight: 600;" />
+        <AuthorizeView Policy="@AppPermissions.RolesManage">
+            <RadzenButton Text="Add" Icon="add_circle" ButtonStyle="ButtonStyle.Primary" Click="AddAsync" />
+        </AuthorizeView>
+    </RadzenStack>
+
+    <AppDataGrid TItem="IdentityRole" Data="_roles" RowSelect="OnRowSelect">
+        <Columns>
+            <RadzenDataGridColumn TItem="IdentityRole" Property="Name" Title="Name" SortOrder="SortOrder.Ascending" />
+        </Columns>
+    </AppDataGrid>
+</RadzenCard>
+
+@code {
+    private List<IdentityRole> _roles = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        await using var scope = ScopeFactory.CreateAsyncScope();
+        var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+        _roles = [.. roleManager.Roles.OrderBy(r => r.Name)];
+    }
+
+    private async Task AddAsync()
+    {
+        var result = await DialogService.OpenDialogAsync<RoleDialog>("Add Role");
+        if (result is true)
+            await LoadAsync();
+    }
+
+    private async Task OnRowSelect(IdentityRole role)
+    {
+        var result = await DialogService.OpenDialogAsync<RoleDialog>("Edit Role",
+            new Dictionary<string, object?> { ["RoleId"] = role.Id });
+        if (result is true)
+            await LoadAsync();
+    }
+}

@@ -1,0 +1,124 @@
+@using Microsoft.AspNetCore.Identity
+
+@inject IServiceScopeFactory ScopeFactory
+@inject DialogService DialogService
+
+<RadzenTemplateForm Data="_model" Submit="@((ApplicationUser _) => SaveAsync())">
+    <RadzenStack Gap="0.75rem">
+        <RadzenFormField Text="Username" AllowFloatingLabel="false">
+            <RadzenTextBox @bind-Value="_model.UserName" Style="width: 100%" />
+        </RadzenFormField>
+        <RadzenFormField Text="Email" AllowFloatingLabel="false">
+            <RadzenTextBox @bind-Value="_model.Email" Style="width: 100%" />
+        </RadzenFormField>
+        <RadzenFormField Text="Display Name" AllowFloatingLabel="false">
+            <RadzenTextBox @bind-Value="_model.DisplayName" Style="width: 100%" />
+        </RadzenFormField>
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center">
+            <RadzenCheckBox @bind-Value="_model.SuperUser" />
+            <RadzenLabel Text="Super User" />
+        </RadzenStack>
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center">
+            <RadzenCheckBox @bind-Value="_model.ViewAllAgencies" />
+            <RadzenLabel Text="View All Agencies" />
+        </RadzenStack>
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center">
+            <RadzenCheckBox @bind-Value="_model.EmailConfirmed" />
+            <RadzenLabel Text="Email Confirmed" />
+        </RadzenStack>
+        <RadzenFormField Text="Roles" AllowFloatingLabel="false">
+            <RadzenDropDown Data="_allRoles" @bind-Value="_selectedRoles" Multiple="true" AllowFiltering="true" Style="width: 100%" />
+        </RadzenFormField>
+    </RadzenStack>
+
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" Gap="0.5rem" class="rz-mt-3">
+        <AuthorizeView Context="authContext" Policy="@AppPermissions.UsersManage">
+            <RadzenButton Text="Delete" ButtonStyle="ButtonStyle.Danger" Click="DeleteAsync" Visible="@_isEdit" />
+            <RadzenButton Text="Save" ButtonStyle="ButtonStyle.Primary" ButtonType="ButtonType.Submit" />
+        </AuthorizeView>
+        <RadzenButton Text="Cancel" ButtonStyle="ButtonStyle.Light" Click="() => DialogService.Close()" />
+    </RadzenStack>
+</RadzenTemplateForm>
+
+@code {
+    [Parameter] public string? UserId { get; set; }
+
+    private ApplicationUser _model = new();
+    private List<string> _allRoles = [];
+    private IEnumerable<string> _selectedRoles = [];
+    private bool _isEdit;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await using var scope = ScopeFactory.CreateAsyncScope();
+        var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+
+        _allRoles = await roleManager.Roles.OrderBy(r => r.Name).Select(r => r.Name!).ToListAsync();
+
+        if (!string.IsNullOrEmpty(UserId))
+        {
+            var existing = await userManager.FindByIdAsync(UserId);
+            if (existing != null)
+            {
+                _model = existing;
+                _selectedRoles = await userManager.GetRolesAsync(existing);
+                _isEdit = true;
+            }
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        await using var scope = ScopeFactory.CreateAsyncScope();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+
+        IdentityResult result;
+
+        if (!_isEdit)
+        {
+            result = await userManager.CreateAsync(_model);
+        }
+        else
+        {
+            var user = await userManager.FindByIdAsync(_model.Id);
+            if (user == null) return;
+
+            user.Email = _model.Email;
+            user.UserName = _model.UserName;
+            user.DisplayName = _model.DisplayName;
+            user.SuperUser = _model.SuperUser;
+            user.ViewAllAgencies = _model.ViewAllAgencies;
+            user.EmailConfirmed = _model.EmailConfirmed;
+
+            result = await userManager.UpdateAsync(user);
+            _model = user;
+        }
+
+        if (!result.Succeeded)
+            return;
+
+        var currentRoles = await userManager.GetRolesAsync(_model);
+        var rolesToRemove = currentRoles.Except(_selectedRoles).ToList();
+        var rolesToAdd = _selectedRoles.Except(currentRoles).ToList();
+
+        if (rolesToRemove.Count > 0)
+            await userManager.RemoveFromRolesAsync(_model, rolesToRemove);
+        if (rolesToAdd.Count > 0)
+            await userManager.AddToRolesAsync(_model, rolesToAdd);
+
+        DialogService.Close(true);
+    }
+
+    private async Task DeleteAsync()
+    {
+        var confirmed = await DialogService.Confirm("Delete this user?", "Confirm", new ConfirmOptions { OkButtonText = "Delete", CancelButtonText = "Cancel" });
+        if (confirmed != true)
+            return;
+
+        await using var scope = ScopeFactory.CreateAsyncScope();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        await userManager.DeleteAsync(_model);
+        DialogService.Close(true);
+    }
+}

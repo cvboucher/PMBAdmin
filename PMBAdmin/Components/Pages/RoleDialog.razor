@@ -1,0 +1,155 @@
+@using Microsoft.AspNetCore.Identity
+@using System.Security.Claims
+
+@inject IServiceScopeFactory ScopeFactory
+@inject DialogService DialogService
+
+<RadzenTemplateForm Data="_roleName" Submit="@((string _) => SaveAsync())">
+    <RadzenStack Gap="0.75rem">
+        <RadzenFormField Text="Role Name" AllowFloatingLabel="false">
+            <RadzenTextBox @bind-Value="_roleName" Style="width: 100%" />
+        </RadzenFormField>
+
+        @foreach (var category in AppPermissions.All.GroupBy(p => p.Category))
+        {
+            var cat = category;
+            <RadzenFormField Text="@cat.Key" AllowFloatingLabel="false">
+                <RadzenDropDown Data="@cat.ToList()"
+                                TextProperty="DisplayName"
+                                ValueProperty="Value"
+                                Multiple="true"
+                                Chips="true"
+                                MaxSelectedLabels="100"
+                                AllowClear="true"
+                                AllowFiltering="true"
+                                Value="@GetCategorySelections(cat.Key)"
+                                Change="@((object v) => OnCategoryChanged(cat.Key, v))"
+                                Style="width: 100%" />
+            </RadzenFormField>
+        }
+    </RadzenStack>
+
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" Gap="0.5rem" class="rz-mt-3">
+        <AuthorizeView Context="authContext" Policy="@AppPermissions.RolesManage">
+            <RadzenButton Text="Delete" ButtonStyle="ButtonStyle.Danger" Click="DeleteAsync" Visible="@_isEdit" />
+            <RadzenButton Text="Save" ButtonStyle="ButtonStyle.Primary" ButtonType="ButtonType.Submit" />
+        </AuthorizeView>
+        <RadzenButton Text="Cancel" ButtonStyle="ButtonStyle.Light" Click="() => DialogService.Close()" />
+    </RadzenStack>
+</RadzenTemplateForm>
+
+@code {
+    [Parameter] public string? RoleId { get; set; }
+
+    private string _roleName = "";
+    private HashSet<string> _selectedPermissions = new();
+    private bool _isEdit;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!string.IsNullOrEmpty(RoleId))
+        {
+            await using var scope = ScopeFactory.CreateAsyncScope();
+            var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+            var role = await roleManager.FindByIdAsync(RoleId);
+            if (role != null)
+            {
+                _roleName = role.Name ?? "";
+                var claims = await roleManager.GetClaimsAsync(role);
+                _selectedPermissions = claims
+                    .Where(c => c.Type == AppPermissions.ClaimType)
+                    .Select(c => c.Value)
+                    .ToHashSet();
+                _isEdit = true;
+            }
+        }
+    }
+
+    private IEnumerable<string> GetCategorySelections(string category) =>
+        AppPermissions.All
+            .Where(p => p.Category == category && _selectedPermissions.Contains(p.Value))
+            .Select(p => p.Value);
+
+    private void OnCategoryChanged(string categoryKey, object value)
+    {
+        var newSelections = (value as System.Collections.IEnumerable)
+            ?.Cast<object>()
+            .Select(v => v.ToString()!)
+            .ToHashSet() ?? [];
+
+        var categoryPerms = AppPermissions.All
+            .Where(p => p.Category == categoryKey)
+            .Select(p => p.Value)
+            .ToHashSet();
+
+        var previousSelections = _selectedPermissions.Intersect(categoryPerms).ToHashSet();
+
+        foreach (var perm in newSelections.Except(previousSelections).ToList())
+            OnPermissionChanged(perm, true);
+        foreach (var perm in previousSelections.Except(newSelections).ToList())
+            OnPermissionChanged(perm, false);
+    }
+
+    private void OnPermissionChanged(string permission, bool isChecked)
+    {
+        if (isChecked)
+            _selectedPermissions.Add(permission);
+        else
+            _selectedPermissions.Remove(permission);
+    }
+
+    private async Task SaveAsync()
+    {
+        await using var scope = ScopeFactory.CreateAsyncScope();
+        var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+
+        IdentityRole role;
+        if (!_isEdit)
+        {
+            role = new IdentityRole(_roleName);
+            var createResult = await roleManager.CreateAsync(role);
+            if (!createResult.Succeeded) return;
+        }
+        else
+        {
+            role = (await roleManager.FindByIdAsync(RoleId!))!;
+            if (role.Name != _roleName)
+            {
+                role.Name = _roleName;
+                await roleManager.UpdateAsync(role);
+            }
+        }
+
+        var existingClaims = await roleManager.GetClaimsAsync(role);
+        var existingPermissions = existingClaims
+            .Where(c => c.Type == AppPermissions.ClaimType)
+            .Select(c => c.Value)
+            .ToHashSet();
+
+        var toRemove = existingPermissions.Except(_selectedPermissions);
+        var toAdd = _selectedPermissions.Except(existingPermissions);
+
+        foreach (var perm in toRemove)
+            await roleManager.RemoveClaimAsync(role,
+                existingClaims.First(c => c.Type == AppPermissions.ClaimType && c.Value == perm));
+        foreach (var perm in toAdd)
+            await roleManager.AddClaimAsync(role,
+                new Claim(AppPermissions.ClaimType, perm));
+
+        DialogService.Close(true);
+    }
+
+    private async Task DeleteAsync()
+    {
+        var confirmed = await DialogService.Confirm("Delete this role?", "Confirm",
+            new ConfirmOptions { OkButtonText = "Delete", CancelButtonText = "Cancel" });
+        if (confirmed != true) return;
+
+        await using var scope = ScopeFactory.CreateAsyncScope();
+        var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+        var role = await roleManager.FindByIdAsync(RoleId!);
+        if (role != null)
+            await roleManager.DeleteAsync(role);
+        DialogService.Close(true);
+    }
+}

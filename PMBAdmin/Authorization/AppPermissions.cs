@@ -16,9 +16,6 @@ public static class AppPermissions
     public const string RolesView = "Roles.View";
     public const string RolesManage = "Roles.Manage";
 
-    // Reports (placeholder set - expand as reports are implemented)
-    public const string ReportsView = "Reports.View";
-
     /// <summary>
     /// All defined permissions for enumeration (e.g., admin UI checkboxes).
     /// Expand this list as pages are converted.
@@ -29,7 +26,6 @@ public static class AppPermissions
         new("Administration", UsersManage, "Users - Manage"),
         new("Administration", RolesView, "Roles - View"),
         new("Administration", RolesManage, "Roles - Manage"),
-        new("Reports", ReportsView, "Reports - View"),
     ];
 
     /// <summary>
