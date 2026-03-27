@@ -1,0 +1,51 @@
+@page "/batch-job-types"
+@page "/batch_job_type_grid"
+@attribute [Authorize(Policy = AppPermissions.BatchJobTypesView)]
+
+@inject IDbContextFactory<PMBContext> DbFactory
+@inject DialogService DialogService
+
+<PageTitle>Batch Job Types</PageTitle>
+
+<RadzenCard>
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" class="rz-mb-3">
+        <RadzenText Text="Batch Job Types" Style="font-weight: 600;" />
+        <AuthorizeView Policy="@AppPermissions.BatchJobTypesManage">
+            <RadzenButton Text="Add" Icon="add_circle" ButtonStyle="ButtonStyle.Primary" Click="AddAsync" />
+        </AuthorizeView>
+    </RadzenStack>
+
+    <AppDataGrid @ref="_grid" TItem="BatchJobType" Data="_query" RowSelect="OnRowSelect">
+        <Columns>
+            <RadzenDataGridColumn TItem="BatchJobType" Property="BatchJobType1" Title="Batch Job Type" SortOrder="SortOrder.Ascending" />
+            <RadzenDataGridColumn TItem="BatchJobType" Property="BatchJobTypeCode" Title="Code" />
+        </Columns>
+    </AppDataGrid>
+</RadzenCard>
+
+@code {
+    private PMBContext? _db;
+    private AppDataGrid<BatchJobType>? _grid;
+    private IQueryable<BatchJobType>? _query;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _db = await DbFactory.CreateDbContextAsync();
+        _query = _db.BatchJobTypes.AsNoTracking();
+    }
+
+    private async Task AddAsync()
+    {
+        var result = await DialogService.OpenDialogAsync<BatchJobTypeDialog>("Add Batch Job Type");
+        if (result is true)
+            _db?.ChangeTracker.Clear();
+    }
+
+    private async Task OnRowSelect(BatchJobType row)
+    {
+        var result = await DialogService.OpenDialogAsync<BatchJobTypeDialog>("Edit Batch Job Type",
+            new Dictionary<string, object?> { ["BatchJobTypeId"] = row.BatchJobTypeId });
+        if (result is true)
+            _db?.ChangeTracker.Clear();
+    }
+}
