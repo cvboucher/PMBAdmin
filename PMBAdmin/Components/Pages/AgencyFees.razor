@@ -1,0 +1,78 @@
+@page "/agency-fees"
+@page "/agency_fee_grid"
+@attribute [Authorize(Policy = AppPermissions.AgencyFeesView)]
+
+@inject IDbContextFactory<PMBContext> DbFactory
+@inject DialogService DialogService
+
+<PageTitle>Agency Fees</PageTitle>
+
+<RadzenCard>
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" class="rz-mb-3">
+        <RadzenText Text="Agency Fees" Style="font-weight: 600;" />
+        <AuthorizeView Policy="@AppPermissions.AgencyFeesManage">
+            <RadzenButton Text="Add" Icon="add_circle" ButtonStyle="ButtonStyle.Primary" Click="AddAsync" />
+        </AuthorizeView>
+    </RadzenStack>
+
+    <AppDataGrid @ref="_grid" TItem="AgencyFee" Data="_query" RowSelect="OnRowSelect">
+        <Columns>
+            <RadzenDataGridColumn TItem="AgencyFee" Property="Agency.Agency1" Title="Agency">
+                <FilterTemplate>
+                    <RadzenDropDown Data="_agencyNames"
+                                    Value="@context.FilterValue"
+                                    Change="@(value => { context.FilterValue = value; _grid!.FirstPage(true); })"
+                                    AllowFiltering="true" AllowClear="true" Style="width: 100%" />
+                </FilterTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="AgencyFee" Property="FeeType.FeeType1" Title="Fee Type">
+                <FilterTemplate>
+                    <RadzenDropDown Data="_feeTypes"
+                                    Value="@context.FilterValue"
+                                    Change="@(value => { context.FilterValue = value; _grid!.FirstPage(true); })"
+                                    AllowFiltering="true" AllowClear="true" Style="width: 100%" />
+                </FilterTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="AgencyFee" Property="EffectiveDate" Title="Effective Date" />
+            <RadzenDataGridColumn TItem="AgencyFee" Property="FeeLevel" Title="Fee Level" />
+            <RadzenDataGridColumn TItem="AgencyFee" Property="FeeAmount" Title="Fee Amount" />
+            <RadzenDataGridColumn TItem="AgencyFee" Property="MaxCountPerCitation" Title="Max Count Per Citation" />
+        </Columns>
+    </AppDataGrid>
+</RadzenCard>
+
+@code {
+    private PMBContext? _db;
+    private AppDataGrid<AgencyFee>? _grid;
+    private IQueryable<AgencyFee>? _query;
+    private List<string> _agencyNames = [];
+    private List<string> _feeTypes = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        _db = await DbFactory.CreateDbContextAsync();
+
+        _query = _db.AgencyFees
+            .AsNoTracking()
+            .Include(x => x.Agency)
+            .Include(x => x.FeeType);
+
+        _agencyNames = [.. _db.Agencies.AsNoTracking().OrderBy(x => x.Agency1).Select(x => x.Agency1)];
+        _feeTypes = [.. _db.FeeTypes.AsNoTracking().OrderBy(x => x.FeeType1).Select(x => x.FeeType1)];
+    }
+
+    private async Task AddAsync()
+    {
+        var result = await DialogService.OpenDialogAsync<AgencyFeeDialog>("Add Agency Fee");
+        if (result is true)
+            _db?.ChangeTracker.Clear();
+    }
+
+    private async Task OnRowSelect(AgencyFee row)
+    {
+        var result = await DialogService.OpenDialogAsync<AgencyFeeDialog>("Edit Agency Fee",
+            new Dictionary<string, object?> { ["AgencyFeeId"] = row.AgencyFeeId });
+        if (result is true)
+            _db?.ChangeTracker.Clear();
+    }
+}

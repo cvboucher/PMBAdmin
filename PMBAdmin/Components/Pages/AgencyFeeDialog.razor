@@ -1,0 +1,78 @@
+@inject IDbContextFactory<PMBContext> DbFactory
+@inject DialogService DialogService
+
+<RadzenTemplateForm Data="_model" Submit="@((AgencyFee _) => SaveAsync())">
+    <RadzenStack Gap="0.75rem">
+        <RadzenFormField Text="Agency" AllowFloatingLabel="false">
+            <RadzenDropDown Data="_agencies" TextProperty="Agency1" ValueProperty="AgencyId" @bind-Value="_model.AgencyId" Style="width: 100%" AllowFiltering="true" AllowClear="true" />
+        </RadzenFormField>
+        <RadzenFormField Text="Fee Type" AllowFloatingLabel="false">
+            <RadzenDropDown Data="_feeTypes" TextProperty="FeeType1" ValueProperty="FeeTypeId" @bind-Value="_model.FeeTypeId" Style="width: 100%" AllowFiltering="true" AllowClear="true" />
+        </RadzenFormField>
+        <RadzenFormField Text="Effective Date" AllowFloatingLabel="false">
+            <RadzenDatePicker @bind-Value="_model.EffectiveDate" Style="width: 100%" />
+        </RadzenFormField>
+        <RadzenFormField Text="Fee Level" AllowFloatingLabel="false">
+            <RadzenNumeric @bind-Value="_model.FeeLevel" Style="width: 100%" />
+        </RadzenFormField>
+        <RadzenFormField Text="Fee Amount" AllowFloatingLabel="false">
+            <RadzenNumeric @bind-Value="_model.FeeAmount" Style="width: 100%" />
+        </RadzenFormField>
+        <RadzenFormField Text="Max Count Per Citation" AllowFloatingLabel="false">
+            <RadzenNumeric @bind-Value="_model.MaxCountPerCitation" Style="width: 100%" />
+        </RadzenFormField>
+    </RadzenStack>
+
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" Gap="0.5rem" class="rz-mt-3">
+        <AuthorizeView Context="authContext" Policy="@AppPermissions.AgencyFeesManage">
+            <RadzenButton Text="Delete" ButtonStyle="ButtonStyle.Danger" Click="DeleteAsync" Visible="@(_model.AgencyFeeId != 0)" />
+            <RadzenButton Text="Save" ButtonStyle="ButtonStyle.Primary" ButtonType="ButtonType.Submit" />
+        </AuthorizeView>
+        <RadzenButton Text="Cancel" ButtonStyle="ButtonStyle.Light" Click="() => DialogService.Close()" />
+    </RadzenStack>
+</RadzenTemplateForm>
+
+@code {
+    [Parameter] public int? AgencyFeeId { get; set; }
+
+    private PMBContext? _db;
+    private AgencyFee _model = new() { EffectiveDate = DateTime.Today };
+    private List<Agency> _agencies = [];
+    private List<FeeType> _feeTypes = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        _db = await DbFactory.CreateDbContextAsync();
+        _agencies = await _db.Agencies.AsNoTracking().OrderBy(x => x.Agency1).ToListAsync();
+        _feeTypes = await _db.FeeTypes.AsNoTracking().OrderBy(x => x.FeeType1).ToListAsync();
+
+        if (AgencyFeeId.HasValue)
+        {
+            var existing = await _db.AgencyFees.FirstOrDefaultAsync(x => x.AgencyFeeId == AgencyFeeId.Value);
+            if (existing != null)
+                _model = existing;
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        if (_model.AgencyFeeId == 0)
+            _db!.AgencyFees.Add(_model);
+        else
+            _db!.AgencyFees.Update(_model);
+
+        await _db!.SaveChangesAsync();
+        DialogService.Close(true);
+    }
+
+    private async Task DeleteAsync()
+    {
+        var confirmed = await DialogService.Confirm("Delete this agency fee?", "Confirm",
+            new ConfirmOptions { OkButtonText = "Delete", CancelButtonText = "Cancel" });
+        if (confirmed != true) return;
+
+        _db!.AgencyFees.Remove(_model);
+        await _db.SaveChangesAsync();
+        DialogService.Close(true);
+    }
+}
