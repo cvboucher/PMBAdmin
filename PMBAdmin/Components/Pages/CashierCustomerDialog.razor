@@ -1,0 +1,86 @@
+@inject IDbContextFactory<PMBContext> DbFactory
+@inject DialogService DialogService
+
+<RadzenTemplateForm Data="_model" Submit="@((CashierCustomer _) => SaveAsync())">
+    <RadzenStack Gap="0.75rem">
+        <RadzenFormField Text="Last/Company Name" AllowFloatingLabel="false">
+            <RadzenTextBox @bind-Value="_model.LastName" Style="width: 100%" />
+        </RadzenFormField>
+        <RadzenFormField Text="First Name" AllowFloatingLabel="false">
+            <RadzenTextBox @bind-Value="_model.FirstName" Style="width: 100%" />
+        </RadzenFormField>
+        <RadzenFormField Text="Address1" AllowFloatingLabel="false">
+            <RadzenTextBox @bind-Value="_model.Address1" Style="width: 100%" />
+        </RadzenFormField>
+        <RadzenFormField Text="Address2" AllowFloatingLabel="false">
+            <RadzenTextBox @bind-Value="_model.Address2" Style="width: 100%" />
+        </RadzenFormField>
+        <RadzenFormField Text="City" AllowFloatingLabel="false">
+            <RadzenTextBox @bind-Value="_model.City" Style="width: 100%" />
+        </RadzenFormField>
+        <RadzenFormField Text="State" AllowFloatingLabel="false">
+            <RadzenTextBox @bind-Value="_model.State" Style="width: 100%" />
+        </RadzenFormField>
+        <RadzenFormField Text="Zip" AllowFloatingLabel="false">
+            <RadzenTextBox @bind-Value="_model.Zip" Style="width: 100%" />
+        </RadzenFormField>
+        <RadzenFormField Text="Phone" AllowFloatingLabel="false">
+            <RadzenTextBox @bind-Value="_model.Phone" Style="width: 100%" />
+        </RadzenFormField>
+        <RadzenFormField Text="Creation Date" AllowFloatingLabel="false">
+            <RadzenDatePicker @bind-Value="_model.CreationDate" Style="width: 100%" DateFormat="MM/dd/yyyy" />
+        </RadzenFormField>
+    </RadzenStack>
+
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" Gap="0.5rem" class="rz-mt-3">
+        <AuthorizeView Context="authContext" Policy="@AppPermissions.CashierCustomersManage">
+            <RadzenButton Text="Delete" ButtonStyle="ButtonStyle.Danger" Click="DeleteAsync" Visible="@(_model.CashierCustomerId != 0)" />
+            <RadzenButton Text="Save" ButtonStyle="ButtonStyle.Primary" ButtonType="ButtonType.Submit" />
+        </AuthorizeView>
+        <RadzenButton Text="Cancel" ButtonStyle="ButtonStyle.Light" Click="() => DialogService.Close()" />
+    </RadzenStack>
+</RadzenTemplateForm>
+
+@code {
+    [Parameter] public int? CashierCustomerId { get; set; }
+
+    private PMBContext? _db;
+    private CashierCustomer _model = new()
+    {
+        CreationDate = DateTime.Now,
+        CashierCustomerGuid = Guid.NewGuid()
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        _db = await DbFactory.CreateDbContextAsync();
+        if (CashierCustomerId.HasValue)
+        {
+            var existing = await _db.CashierCustomers.FirstOrDefaultAsync(x => x.CashierCustomerId == CashierCustomerId.Value);
+            if (existing != null)
+                _model = existing;
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        if (_model.CashierCustomerId == 0)
+            _db!.CashierCustomers.Add(_model);
+        else
+            _db!.CashierCustomers.Update(_model);
+
+        await _db!.SaveChangesAsync();
+        DialogService.Close(true);
+    }
+
+    private async Task DeleteAsync()
+    {
+        var confirmed = await DialogService.Confirm("Delete this cashier customer?", "Confirm",
+            new ConfirmOptions { OkButtonText = "Delete", CancelButtonText = "Cancel" });
+        if (confirmed != true) return;
+
+        _db!.CashierCustomers.Remove(_model);
+        await _db.SaveChangesAsync();
+        DialogService.Close(true);
+    }
+}

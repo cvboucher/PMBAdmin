@@ -1,0 +1,57 @@
+@page "/cashier-customers"
+@page "/cashier_customer_list"
+@attribute [Authorize(Policy = AppPermissions.CashierCustomersView)]
+
+@inject IDbContextFactory<PMBContext> DbFactory
+@inject DialogService DialogService
+
+<PageTitle>Cashier Customers</PageTitle>
+
+<RadzenCard>
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" class="rz-mb-3">
+        <RadzenText Text="Cashier Customers" Style="font-weight: 600;" />
+        <AuthorizeView Policy="@AppPermissions.CashierCustomersManage">
+            <RadzenButton Text="Add" Icon="add_circle" ButtonStyle="ButtonStyle.Primary" Click="AddAsync" />
+        </AuthorizeView>
+    </RadzenStack>
+
+    <AppDataGrid @ref="_grid" TItem="CashierCustomer" Data="_query" RowSelect="OnRowSelect">
+        <Columns>
+            <RadzenDataGridColumn TItem="CashierCustomer" Property="LastName" Title="Last/Company Name" SortOrder="SortOrder.Ascending" />
+            <RadzenDataGridColumn TItem="CashierCustomer" Property="FirstName" Title="First Name" />
+            <RadzenDataGridColumn TItem="CashierCustomer" Property="Address1" Title="Address1" />
+            <RadzenDataGridColumn TItem="CashierCustomer" Property="Address2" Title="Address2" />
+            <RadzenDataGridColumn TItem="CashierCustomer" Property="City" Title="City" />
+            <RadzenDataGridColumn TItem="CashierCustomer" Property="State" Title="State" />
+            <RadzenDataGridColumn TItem="CashierCustomer" Property="Zip" Title="Zip" />
+            <RadzenDataGridColumn TItem="CashierCustomer" Property="Phone" Title="Phone" />
+        </Columns>
+    </AppDataGrid>
+</RadzenCard>
+
+@code {
+    private PMBContext? _db;
+    private AppDataGrid<CashierCustomer>? _grid;
+    private IQueryable<CashierCustomer>? _query;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _db = await DbFactory.CreateDbContextAsync();
+        _query = _db.CashierCustomers.AsNoTracking();
+    }
+
+    private async Task AddAsync()
+    {
+        var result = await DialogService.OpenDialogAsync<CashierCustomerDialog>("Add Cashier Customer");
+        if (result is true)
+            _db?.ChangeTracker.Clear();
+    }
+
+    private async Task OnRowSelect(CashierCustomer row)
+    {
+        var result = await DialogService.OpenDialogAsync<CashierCustomerDialog>("Edit Cashier Customer",
+            new Dictionary<string, object?> { ["CashierCustomerId"] = row.CashierCustomerId });
+        if (result is true)
+            _db?.ChangeTracker.Clear();
+    }
+}
