@@ -1,0 +1,51 @@
+@page "/cash-registers"
+@page "/cash_register_grid"
+@attribute [Authorize(Policy = AppPermissions.CashRegistersView)]
+
+@inject IDbContextFactory<PMBContext> DbFactory
+@inject DialogService DialogService
+
+<PageTitle>Cash Registers</PageTitle>
+
+<RadzenCard>
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" class="rz-mb-3">
+        <RadzenText Text="Cash Registers" Style="font-weight: 600;" />
+        <AuthorizeView Policy="@AppPermissions.CashRegistersManage">
+            <RadzenButton Text="Add" Icon="add_circle" ButtonStyle="ButtonStyle.Primary" Click="AddAsync" />
+        </AuthorizeView>
+    </RadzenStack>
+
+    <AppDataGrid @ref="_grid" TItem="CashRegister" Data="_query" RowSelect="OnRowSelect">
+        <Columns>
+            <RadzenDataGridColumn TItem="CashRegister" Property="CashRegisterName" Title="Name" SortOrder="SortOrder.Ascending" />
+            <RadzenDataGridColumn TItem="CashRegister" Property="CashRegisterGuid" Title="Guid" />
+        </Columns>
+    </AppDataGrid>
+</RadzenCard>
+
+@code {
+    private PMBContext? _db;
+    private AppDataGrid<CashRegister>? _grid;
+    private IQueryable<CashRegister>? _query;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _db = await DbFactory.CreateDbContextAsync();
+        _query = _db.CashRegisters.AsNoTracking();
+    }
+
+    private async Task AddAsync()
+    {
+        var result = await DialogService.OpenDialogAsync<CashRegisterDialog>("Add Cash Register");
+        if (result is true)
+            _db?.ChangeTracker.Clear();
+    }
+
+    private async Task OnRowSelect(CashRegister row)
+    {
+        var result = await DialogService.OpenDialogAsync<CashRegisterDialog>("Edit Cash Register",
+            new Dictionary<string, object?> { ["CashRegisterId"] = row.CashRegisterId });
+        if (result is true)
+            _db?.ChangeTracker.Clear();
+    }
+}

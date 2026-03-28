@@ -1,0 +1,61 @@
+@inject IDbContextFactory<PMBContext> DbFactory
+@inject DialogService DialogService
+
+<RadzenTemplateForm Data="_model" Submit="@((CashRegister _) => SaveAsync())">
+    <RadzenStack Gap="0.75rem">
+        <RadzenFormField Text="Name" AllowFloatingLabel="false">
+            <RadzenTextBox @bind-Value="_model.CashRegisterName" Style="width: 100%" />
+        </RadzenFormField>
+        <RadzenFormField Text="Guid" AllowFloatingLabel="false">
+            <RadzenTextBox @bind-Value="_model.CashRegisterGuid" Style="width: 100%" ReadOnly="true" />
+        </RadzenFormField>
+    </RadzenStack>
+
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" Gap="0.5rem" class="rz-mt-3">
+        <AuthorizeView Context="authContext" Policy="@AppPermissions.CashRegistersManage">
+            <RadzenButton Text="Delete" ButtonStyle="ButtonStyle.Danger" Click="DeleteAsync" Visible="@(_model.CashRegisterId != 0)" />
+            <RadzenButton Text="Save" ButtonStyle="ButtonStyle.Primary" ButtonType="ButtonType.Submit" />
+        </AuthorizeView>
+        <RadzenButton Text="Cancel" ButtonStyle="ButtonStyle.Light" Click="() => DialogService.Close()" />
+    </RadzenStack>
+</RadzenTemplateForm>
+
+@code {
+    [Parameter] public int? CashRegisterId { get; set; }
+
+    private PMBContext? _db;
+    private CashRegister _model = new() { CashRegisterGuid = Guid.NewGuid() };
+
+    protected override async Task OnInitializedAsync()
+    {
+        _db = await DbFactory.CreateDbContextAsync();
+        if (CashRegisterId.HasValue)
+        {
+            var existing = await _db.CashRegisters.FirstOrDefaultAsync(x => x.CashRegisterId == CashRegisterId.Value);
+            if (existing != null)
+                _model = existing;
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        if (_model.CashRegisterId == 0)
+            _db!.CashRegisters.Add(_model);
+        else
+            _db!.CashRegisters.Update(_model);
+
+        await _db!.SaveChangesAsync();
+        DialogService.Close(true);
+    }
+
+    private async Task DeleteAsync()
+    {
+        var confirmed = await DialogService.Confirm("Delete this cash register?", "Confirm",
+            new ConfirmOptions { OkButtonText = "Delete", CancelButtonText = "Cancel" });
+        if (confirmed != true) return;
+
+        _db!.CashRegisters.Remove(_model);
+        await _db.SaveChangesAsync();
+        DialogService.Close(true);
+    }
+}

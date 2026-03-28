@@ -25,6 +25,8 @@ public static class AppPermissions
     public const string AgencyVoidsManage = "AgencyVoids.Manage";
     public const string BatchJobTypesView = "BatchJobTypes.View";
     public const string BatchJobTypesManage = "BatchJobTypes.Manage";
+    public const string CashRegistersView = "CashRegisters.View";
+    public const string CashRegistersManage = "CashRegisters.Manage";
 
     /// <summary>
     /// All defined permissions for enumeration (e.g., admin UI checkboxes).
@@ -45,6 +47,8 @@ public static class AppPermissions
         new("Configuration", AgencyVoidsManage, "Agency Voids - Manage"),
         new("Configuration", BatchJobTypesView, "Batch Job Types - View"),
         new("Configuration", BatchJobTypesManage, "Batch Job Types - Manage"),
+        new("Configuration", CashRegistersView, "Cash Registers - View"),
+        new("Configuration", CashRegistersManage, "Cash Registers - Manage"),
     ];
 
     /// <summary>
