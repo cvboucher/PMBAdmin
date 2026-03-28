@@ -29,6 +29,8 @@ public static class AppPermissions
     public const string CashRegistersManage = "CashRegisters.Manage";
     public const string CashierCustomersView = "CashierCustomers.View";
     public const string CashierCustomersManage = "CashierCustomers.Manage";
+    public const string CashierBatchesView = "CashierBatches.View";
+    public const string CashierBatchesManage = "CashierBatches.Manage";
 
     /// <summary>
     /// All defined permissions for enumeration (e.g., admin UI checkboxes).
@@ -53,6 +55,8 @@ public static class AppPermissions
         new("Configuration", CashRegistersManage, "Cash Registers - Manage"),
         new("Configuration", CashierCustomersView, "Cashier Customers - View"),
         new("Configuration", CashierCustomersManage, "Cashier Customers - Manage"),
+        new("Configuration", CashierBatchesView, "Cashier Batches - View"),
+        new("Configuration", CashierBatchesManage, "Cashier Batches - Manage"),
     ];
 
     /// <summary>

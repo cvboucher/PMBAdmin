@@ -1,0 +1,106 @@
+@page "/cashier-batch"
+@page "/cashier_batch_form"
+@attribute [Authorize(Policy = AppPermissions.CashierBatchesManage)]
+
+@inject IDbContextFactory<PMBContext> DbFactory
+@inject IHttpContextAccessor HttpContextAccessor
+@inject NavigationManager NavigationManager
+@inject DialogService DialogService
+
+<PageTitle>Cashier Batch</PageTitle>
+
+<RadzenCard>
+    <RadzenStack Gap="0.75rem">
+        <RadzenText Text="Add/Edit Cashier Batch" Style="font-weight: 600;" />
+
+        @if (!string.IsNullOrWhiteSpace(_statusMessage))
+        {
+            <RadzenAlert Severity="AlertSeverity.Warning" Text="@_statusMessage" />
+        }
+        else if (_cashRegister != null && _user != null)
+        {
+            <RadzenStack Gap="0.5rem">
+                <RadzenText Text=$"User: {_user.Name}" />
+                <RadzenText Text=$"Open Date Time: {_openDateTime:g}" />
+                <RadzenText Text=$"Cash Register: {_cashRegister.CashRegisterName}" />
+
+                @if (_existingBatch != null)
+                {
+                    <RadzenAlert Severity="AlertSeverity.Info" Text=$"An open batch already exists (Opened {_existingBatch.OpenDateTime:g})." />
+                }
+                else
+                {
+                    <RadzenButton Text="Open Batch" Icon="add_circle" ButtonStyle="ButtonStyle.Primary" Click="OpenBatchAsync" />
+                }
+            </RadzenStack>
+        }
+    </RadzenStack>
+</RadzenCard>
+
+@code {
+    private string? _statusMessage;
+    private CashRegister? _cashRegister;
+    private Pmbuser? _user;
+    private CashierBatch? _existingBatch;
+    private DateTime _openDateTime = DateTime.Now;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await using var db = await DbFactory.CreateDbContextAsync();
+
+        var login = HttpContextAccessor.HttpContext?.User.Identity?.Name;
+        if (string.IsNullOrWhiteSpace(login))
+        {
+            _statusMessage = "Not authenticated.";
+            return;
+        }
+
+        var guidValue = HttpContextAccessor.HttpContext?.Request.Cookies["CashRegisterGuid"];
+        if (!Guid.TryParse(guidValue, out var registerGuid))
+        {
+            _statusMessage = "This machine is not configured as a cash register.";
+            return;
+        }
+
+        _cashRegister = await db.CashRegisters.AsNoTracking().FirstOrDefaultAsync(x => x.CashRegisterGuid == registerGuid);
+        if (_cashRegister == null)
+        {
+            _statusMessage = "Cash register not found for this machine.";
+            return;
+        }
+
+        _user = await db.Pmbusers.AsNoTracking().FirstOrDefaultAsync(x => x.Login == login);
+        if (_user == null)
+        {
+            _statusMessage = "PMB user record not found for current login.";
+            return;
+        }
+
+        _existingBatch = await db.CashierBatches
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.UserId == _user.UserId && x.CashRegisterId == _cashRegister.CashRegisterId && !x.BatchClosed);
+    }
+
+    private async Task OpenBatchAsync()
+    {
+        if (_cashRegister == null || _user == null)
+            return;
+
+        await using var db = await DbFactory.CreateDbContextAsync();
+        var batch = new CashierBatch
+        {
+            CashRegisterId = _cashRegister.CashRegisterId,
+            UserId = _user.UserId,
+            OpenDateTime = DateTime.Now,
+            BatchClosed = false
+        };
+
+        db.CashierBatches.Add(batch);
+        await db.SaveChangesAsync();
+
+        _existingBatch = batch;
+        _openDateTime = batch.OpenDateTime;
+
+        await DialogService.Alert("Cashier batch opened.", "Success");
+    }
+}
