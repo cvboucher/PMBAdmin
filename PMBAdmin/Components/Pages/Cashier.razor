@@ -1,0 +1,135 @@
+@page "/cashier"
+@attribute [Authorize(Policy = AppPermissions.CashierView)]
+
+@inject IDbContextFactory<PMBContext> DbFactory
+@inject DialogService DialogService
+
+<PageTitle>Cashier</PageTitle>
+
+<RadzenTabs>
+    <Tabs>
+        <RadzenTabsItem Text="Customer Search">
+            <RadzenCard>
+                <RadzenStack Gap="0.75rem">
+                    <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center">
+                        <RadzenTextBox @bind-Value="_keyword" Placeholder="Keyword" Style="width: 300px" />
+                        <RadzenButton Text="Search" Icon="search" ButtonStyle="ButtonStyle.Primary" Click="SearchAsync" />
+                        <RadzenButton Text="Clear" ButtonStyle="ButtonStyle.Light" Click="ClearAsync" />
+                        <AuthorizeView Policy="@AppPermissions.CashierCustomersManage">
+                            <RadzenButton Text="New Customer" Icon="add_circle" ButtonStyle="ButtonStyle.Success" Click="AddCustomerAsync" />
+                        </AuthorizeView>
+                    </RadzenStack>
+
+                    <AppDataGrid TItem="CashierCustomerSearchVw" Data="_results" RowSelect="OnRowSelect">
+                        <Columns>
+                            <RadzenDataGridColumn TItem="CashierCustomerSearchVw" Title="Select" Width="90px">
+                                <Template>
+                                    <RadzenButton Text="Select" ButtonStyle="ButtonStyle.Light" Click="@(() => SelectCustomer(context.CashierCustomerId))" />
+                                </Template>
+                            </RadzenDataGridColumn>
+                            <RadzenDataGridColumn TItem="CashierCustomerSearchVw" Property="LastName" Title="Last/Company Name" SortOrder="SortOrder.Ascending" />
+                            <RadzenDataGridColumn TItem="CashierCustomerSearchVw" Property="FirstName" Title="First Name" />
+                            <RadzenDataGridColumn TItem="CashierCustomerSearchVw" Property="Address1" Title="Address1" />
+                            <RadzenDataGridColumn TItem="CashierCustomerSearchVw" Property="Address2" Title="Address2" />
+                            <RadzenDataGridColumn TItem="CashierCustomerSearchVw" Property="City" Title="City" />
+                            <RadzenDataGridColumn TItem="CashierCustomerSearchVw" Property="State" Title="State" />
+                            <RadzenDataGridColumn TItem="CashierCustomerSearchVw" Property="Zip" Title="Zip" />
+                            <RadzenDataGridColumn TItem="CashierCustomerSearchVw" Property="Phone" Title="Phone" />
+                            <RadzenDataGridColumn TItem="CashierCustomerSearchVw" Title="Edit" Width="90px">
+                                <Template>
+                                    <RadzenButton Text="Edit" ButtonStyle="ButtonStyle.Light" Click="@(() => EditCustomerAsync(context.CashierCustomerId))" />
+                                </Template>
+                            </RadzenDataGridColumn>
+                        </Columns>
+                    </AppDataGrid>
+                </RadzenStack>
+            </RadzenCard>
+        </RadzenTabsItem>
+
+        <RadzenTabsItem Text="Customer">
+            <RadzenCard>
+                @if (_selectedCustomer == null)
+                {
+                    <RadzenText Text="Select a customer from the search tab." />
+                }
+                else
+                {
+                    <RadzenStack Gap="0.5rem">
+                        <RadzenText Text=$"Customer: {_selectedCustomer.LastName}, {_selectedCustomer.FirstName}" Style="font-weight: 600;" />
+                        <RadzenText Text=$"Address: {_selectedCustomer.Address1} {_selectedCustomer.Address2}" />
+                        <RadzenText Text=$"City/State/Zip: {_selectedCustomer.City}, {_selectedCustomer.State} {_selectedCustomer.Zip}" />
+                        <RadzenText Text=$"Phone: {_selectedCustomer.Phone}" />
+                        <AuthorizeView Policy="@AppPermissions.CashierCustomersManage">
+                            <RadzenButton Text="Edit Customer" Icon="edit" ButtonStyle="ButtonStyle.Primary" Click="@(() => EditCustomerAsync(_selectedCustomer.CashierCustomerId))" />
+                        </AuthorizeView>
+                    </RadzenStack>
+                }
+            </RadzenCard>
+        </RadzenTabsItem>
+
+        <RadzenTabsItem Text="Batch">
+            <CashierBatchForm />
+        </RadzenTabsItem>
+    </Tabs>
+</RadzenTabs>
+
+@code {
+    private string? _keyword;
+    private List<CashierCustomerSearchVw> _results = [];
+    private CashierCustomer? _selectedCustomer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await SearchAsync();
+    }
+
+    private async Task SearchAsync()
+    {
+        await using var db = await DbFactory.CreateDbContextAsync();
+        var query = db.CashierCustomerSearchVws.AsNoTracking();
+        if (!string.IsNullOrWhiteSpace(_keyword))
+        {
+            query = query.Where(x => x.SearchField != null && x.SearchField.Contains(_keyword));
+        }
+        _results = [.. query.OrderBy(x => x.LastName)];
+    }
+
+    private async Task ClearAsync()
+    {
+        _keyword = null;
+        await SearchAsync();
+    }
+
+    private void OnRowSelect(CashierCustomerSearchVw row) => SelectCustomer(row.CashierCustomerId);
+
+    private async void SelectCustomer(int cashierCustomerId)
+    {
+        await using var db = await DbFactory.CreateDbContextAsync();
+        _selectedCustomer = await db.CashierCustomers.AsNoTracking().FirstOrDefaultAsync(x => x.CashierCustomerId == cashierCustomerId);
+        StateHasChanged();
+    }
+
+    private async Task AddCustomerAsync()
+    {
+        var result = await DialogService.OpenDialogAsync<CashierCustomerDialog>("Add Cashier Customer");
+        if (result is true)
+            await SearchAsync();
+    }
+
+    private async Task EditCustomerAsync(int cashierCustomerId)
+    {
+        var result = await DialogService.OpenDialogAsync<CashierCustomerDialog>("Edit Cashier Customer",
+            new Dictionary<string, object?> { ["CashierCustomerId"] = cashierCustomerId });
+        if (result is true)
+        {
+            await SearchAsync();
+            await LoadSelectedAsync(cashierCustomerId);
+        }
+    }
+
+    private async Task LoadSelectedAsync(int cashierCustomerId)
+    {
+        await using var db = await DbFactory.CreateDbContextAsync();
+        _selectedCustomer = await db.CashierCustomers.AsNoTracking().FirstOrDefaultAsync(x => x.CashierCustomerId == cashierCustomerId);
+    }
+}
