@@ -1,0 +1,68 @@
+@inject IDbContextFactory<PMBContext> DbFactory
+@inject DialogService DialogService
+
+<RadzenTemplateForm Data="_model" Submit="@((Comment _) => SaveAsync())">
+    <RadzenStack Gap="0.75rem">
+        <RadzenFormField Text="Agency" AllowFloatingLabel="false">
+            <RadzenDropDown Data="_agencies" TextProperty="Agency1" ValueProperty="AgencyId" @bind-Value="_model.AgencyId" Style="width: 100%" AllowFiltering="true" AllowClear="true" />
+        </RadzenFormField>
+        <RadzenFormField Text="Comment" AllowFloatingLabel="false">
+            <RadzenTextBox @bind-Value="_model.Comment1" Style="width: 100%" />
+        </RadzenFormField>
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center">
+            <RadzenCheckBox @bind-Value="_model.CopyToPda" />
+            <RadzenLabel Text="Copy To PDA" />
+        </RadzenStack>
+    </RadzenStack>
+
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" Gap="0.5rem" class="rz-mt-3">
+        <AuthorizeView Context="authContext" Policy="@AppPermissions.CommentsManage">
+            <RadzenButton Text="Delete" ButtonStyle="ButtonStyle.Danger" Click="DeleteAsync" Visible="@(_model.CommentId != 0)" />
+            <RadzenButton Text="Save" ButtonStyle="ButtonStyle.Primary" ButtonType="ButtonType.Submit" />
+        </AuthorizeView>
+        <RadzenButton Text="Cancel" ButtonStyle="ButtonStyle.Light" Click="() => DialogService.Close()" />
+    </RadzenStack>
+</RadzenTemplateForm>
+
+@code {
+    [Parameter] public int? CommentId { get; set; }
+
+    private PMBContext? _db;
+    private Comment _model = new();
+    private List<Agency> _agencies = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        _db = await DbFactory.CreateDbContextAsync();
+        _agencies = await _db.Agencies.AsNoTracking().OrderBy(x => x.Agency1).ToListAsync();
+
+        if (CommentId.HasValue)
+        {
+            var existing = await _db.Comments.FirstOrDefaultAsync(x => x.CommentId == CommentId.Value);
+            if (existing != null)
+                _model = existing;
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        if (_model.CommentId == 0)
+            _db!.Comments.Add(_model);
+        else
+            _db!.Comments.Update(_model);
+
+        await _db!.SaveChangesAsync();
+        DialogService.Close(true);
+    }
+
+    private async Task DeleteAsync()
+    {
+        var confirmed = await DialogService.Confirm("Delete this comment?", "Confirm",
+            new ConfirmOptions { OkButtonText = "Delete", CancelButtonText = "Cancel" });
+        if (confirmed != true) return;
+
+        _db!.Comments.Remove(_model);
+        await _db.SaveChangesAsync();
+        DialogService.Close(true);
+    }
+}

@@ -44,6 +44,8 @@ public static class AppPermissions
     public const string CashnetLogsView = "CashnetLogs.View";
     public const string ColorsView = "Colors.View";
     public const string ColorsManage = "Colors.Manage";
+    public const string CommentsView = "Comments.View";
+    public const string CommentsManage = "Comments.Manage";
 
     /// <summary>
     /// All defined permissions for enumeration (e.g., admin UI checkboxes).
@@ -83,6 +85,8 @@ public static class AppPermissions
         new("Configuration", CashnetLogsView, "Cashnet Logs - View"),
         new("Configuration", ColorsView, "Colors - View"),
         new("Configuration", ColorsManage, "Colors - Manage"),
+        new("Configuration", CommentsView, "Comments - View"),
+        new("Configuration", CommentsManage, "Comments - Manage"),
     ];
 
     /// <summary>

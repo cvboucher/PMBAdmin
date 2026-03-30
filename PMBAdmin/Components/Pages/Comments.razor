@@ -1,0 +1,60 @@
+@page "/comments"
+@page "/comment_grid"
+@attribute [Authorize(Policy = AppPermissions.CommentsView)]
+
+@inject IDbContextFactory<PMBContext> DbFactory
+@inject DialogService DialogService
+
+<PageTitle>Comments</PageTitle>
+
+<RadzenCard>
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" class="rz-mb-3">
+        <RadzenText Text="Comments" Style="font-weight: 600;" />
+        <AuthorizeView Policy="@AppPermissions.CommentsManage">
+            <RadzenButton Text="Add" Icon="add_circle" ButtonStyle="ButtonStyle.Primary" Click="AddAsync" />
+        </AuthorizeView>
+    </RadzenStack>
+
+    <AppDataGrid @ref="_grid" TItem="Comment" Data="_query" RowSelect="OnRowSelect">
+        <Columns>
+            <RadzenDataGridColumn TItem="Comment" Property="Agency.Agency1" Title="Agency">
+                <FilterTemplate>
+                    <RadzenDropDown Data="_agencyNames" Value="@context.FilterValue" Change="@(value => { context.FilterValue = value; _grid!.FirstPage(true); })" AllowFiltering="true" AllowClear="true" Style="width: 100%" />
+                </FilterTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="Comment" Property="Comment1" Title="Comment" SortOrder="SortOrder.Ascending" />
+            <RadzenDataGridColumn TItem="Comment" Property="CopyToPda" Title="Copy To PDA" Width="140px">
+                <Template>@(context.CopyToPda ? "Yes" : "No")</Template>
+            </RadzenDataGridColumn>
+        </Columns>
+    </AppDataGrid>
+</RadzenCard>
+
+@code {
+    private PMBContext? _db;
+    private AppDataGrid<Comment>? _grid;
+    private IQueryable<Comment>? _query;
+    private List<string> _agencyNames = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        _db = await DbFactory.CreateDbContextAsync();
+        _query = _db.Comments.AsNoTracking().Include(x => x.Agency);
+        _agencyNames = [.. _db.Agencies.AsNoTracking().OrderBy(x => x.Agency1).Select(x => x.Agency1)];
+    }
+
+    private async Task AddAsync()
+    {
+        var result = await DialogService.OpenDialogAsync<CommentDialog>("Add Comment");
+        if (result is true)
+            _db?.ChangeTracker.Clear();
+    }
+
+    private async Task OnRowSelect(Comment row)
+    {
+        var result = await DialogService.OpenDialogAsync<CommentDialog>("Edit Comment",
+            new Dictionary<string, object?> { ["CommentId"] = row.CommentId });
+        if (result is true)
+            _db?.ChangeTracker.Clear();
+    }
+}
