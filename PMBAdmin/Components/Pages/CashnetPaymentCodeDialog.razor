@@ -1,0 +1,61 @@
+@inject IDbContextFactory<PMBContext> DbFactory
+@inject DialogService DialogService
+
+<RadzenTemplateForm Data="_model" Submit="@((CashnetPaymentCode _) => SaveAsync())">
+    <RadzenStack Gap="0.75rem">
+        <RadzenFormField Text="Payment Code" AllowFloatingLabel="false">
+            <RadzenTextBox @bind-Value="_model.PaymentCode" Style="width: 100%" />
+        </RadzenFormField>
+        <RadzenFormField Text="Payment Description" AllowFloatingLabel="false">
+            <RadzenTextBox @bind-Value="_model.PaymentDescription" Style="width: 100%" />
+        </RadzenFormField>
+    </RadzenStack>
+
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" Gap="0.5rem" class="rz-mt-3">
+        <AuthorizeView Context="authContext" Policy="@AppPermissions.CashnetPaymentCodesManage">
+            <RadzenButton Text="Delete" ButtonStyle="ButtonStyle.Danger" Click="DeleteAsync" Visible="@(_model.CashnetPaymentCodeId != 0)" />
+            <RadzenButton Text="Save" ButtonStyle="ButtonStyle.Primary" ButtonType="ButtonType.Submit" />
+        </AuthorizeView>
+        <RadzenButton Text="Cancel" ButtonStyle="ButtonStyle.Light" Click="() => DialogService.Close()" />
+    </RadzenStack>
+</RadzenTemplateForm>
+
+@code {
+    [Parameter] public int? CashnetPaymentCodeId { get; set; }
+
+    private PMBContext? _db;
+    private CashnetPaymentCode _model = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _db = await DbFactory.CreateDbContextAsync();
+        if (CashnetPaymentCodeId.HasValue)
+        {
+            var existing = await _db.CashnetPaymentCodes.FirstOrDefaultAsync(x => x.CashnetPaymentCodeId == CashnetPaymentCodeId.Value);
+            if (existing != null)
+                _model = existing;
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        if (_model.CashnetPaymentCodeId == 0)
+            _db!.CashnetPaymentCodes.Add(_model);
+        else
+            _db!.CashnetPaymentCodes.Update(_model);
+
+        await _db!.SaveChangesAsync();
+        DialogService.Close(true);
+    }
+
+    private async Task DeleteAsync()
+    {
+        var confirmed = await DialogService.Confirm("Delete this cashnet payment code?", "Confirm",
+            new ConfirmOptions { OkButtonText = "Delete", CancelButtonText = "Cancel" });
+        if (confirmed != true) return;
+
+        _db!.CashnetPaymentCodes.Remove(_model);
+        await _db.SaveChangesAsync();
+        DialogService.Close(true);
+    }
+}

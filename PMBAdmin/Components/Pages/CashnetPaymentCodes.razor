@@ -1,0 +1,51 @@
+@page "/cashnet-payment-codes"
+@page "/cashnet_payment_code_grid"
+@attribute [Authorize(Policy = AppPermissions.CashnetPaymentCodesView)]
+
+@inject IDbContextFactory<PMBContext> DbFactory
+@inject DialogService DialogService
+
+<PageTitle>Cashnet Payment Codes</PageTitle>
+
+<RadzenCard>
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" class="rz-mb-3">
+        <RadzenText Text="Cashnet Payment Codes" Style="font-weight: 600;" />
+        <AuthorizeView Policy="@AppPermissions.CashnetPaymentCodesManage">
+            <RadzenButton Text="Add" Icon="add_circle" ButtonStyle="ButtonStyle.Primary" Click="AddAsync" />
+        </AuthorizeView>
+    </RadzenStack>
+
+    <AppDataGrid @ref="_grid" TItem="CashnetPaymentCode" Data="_query" RowSelect="OnRowSelect">
+        <Columns>
+            <RadzenDataGridColumn TItem="CashnetPaymentCode" Property="PaymentCode" Title="Payment Code" SortOrder="SortOrder.Ascending" />
+            <RadzenDataGridColumn TItem="CashnetPaymentCode" Property="PaymentDescription" Title="Payment Description" />
+        </Columns>
+    </AppDataGrid>
+</RadzenCard>
+
+@code {
+    private PMBContext? _db;
+    private AppDataGrid<CashnetPaymentCode>? _grid;
+    private IQueryable<CashnetPaymentCode>? _query;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _db = await DbFactory.CreateDbContextAsync();
+        _query = _db.CashnetPaymentCodes.AsNoTracking();
+    }
+
+    private async Task AddAsync()
+    {
+        var result = await DialogService.OpenDialogAsync<CashnetPaymentCodeDialog>("Add Cashnet Payment Code");
+        if (result is true)
+            _db?.ChangeTracker.Clear();
+    }
+
+    private async Task OnRowSelect(CashnetPaymentCode row)
+    {
+        var result = await DialogService.OpenDialogAsync<CashnetPaymentCodeDialog>("Edit Cashnet Payment Code",
+            new Dictionary<string, object?> { ["CashnetPaymentCodeId"] = row.CashnetPaymentCodeId });
+        if (result is true)
+            _db?.ChangeTracker.Clear();
+    }
+}
