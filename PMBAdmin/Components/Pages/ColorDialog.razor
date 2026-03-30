@@ -1,0 +1,65 @@
+@inject IDbContextFactory<PMBContext> DbFactory
+@inject DialogService DialogService
+
+<RadzenTemplateForm Data="_model" Submit="@((Color _) => SaveAsync())">
+    <RadzenStack Gap="0.75rem">
+        <RadzenFormField Text="Color" AllowFloatingLabel="false">
+            <RadzenTextBox @bind-Value="_model.Color1" Style="width: 100%" />
+        </RadzenFormField>
+        <RadzenFormField Text="Code" AllowFloatingLabel="false">
+            <RadzenTextBox @bind-Value="_model.ColorCode" Style="width: 100%" />
+        </RadzenFormField>
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center">
+            <RadzenCheckBox @bind-Value="_model.CopyToPda" />
+            <RadzenLabel Text="Copy To PDA" />
+        </RadzenStack>
+    </RadzenStack>
+
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" Gap="0.5rem" class="rz-mt-3">
+        <AuthorizeView Context="authContext" Policy="@AppPermissions.ColorsManage">
+            <RadzenButton Text="Delete" ButtonStyle="ButtonStyle.Danger" Click="DeleteAsync" Visible="@(_model.ColorId != 0)" />
+            <RadzenButton Text="Save" ButtonStyle="ButtonStyle.Primary" ButtonType="ButtonType.Submit" />
+        </AuthorizeView>
+        <RadzenButton Text="Cancel" ButtonStyle="ButtonStyle.Light" Click="() => DialogService.Close()" />
+    </RadzenStack>
+</RadzenTemplateForm>
+
+@code {
+    [Parameter] public int? ColorId { get; set; }
+
+    private PMBContext? _db;
+    private Color _model = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _db = await DbFactory.CreateDbContextAsync();
+        if (ColorId.HasValue)
+        {
+            var existing = await _db.Colors.FirstOrDefaultAsync(x => x.ColorId == ColorId.Value);
+            if (existing != null)
+                _model = existing;
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        if (_model.ColorId == 0)
+            _db!.Colors.Add(_model);
+        else
+            _db!.Colors.Update(_model);
+
+        await _db!.SaveChangesAsync();
+        DialogService.Close(true);
+    }
+
+    private async Task DeleteAsync()
+    {
+        var confirmed = await DialogService.Confirm("Delete this color?", "Confirm",
+            new ConfirmOptions { OkButtonText = "Delete", CancelButtonText = "Cancel" });
+        if (confirmed != true) return;
+
+        _db!.Colors.Remove(_model);
+        await _db.SaveChangesAsync();
+        DialogService.Close(true);
+    }
+}

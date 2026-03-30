@@ -1,0 +1,54 @@
+@page "/colors"
+@page "/color_list"
+@attribute [Authorize(Policy = AppPermissions.ColorsView)]
+
+@inject IDbContextFactory<PMBContext> DbFactory
+@inject DialogService DialogService
+
+<PageTitle>Colors</PageTitle>
+
+<RadzenCard>
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" class="rz-mb-3">
+        <RadzenText Text="Colors" Style="font-weight: 600;" />
+        <AuthorizeView Policy="@AppPermissions.ColorsManage">
+            <RadzenButton Text="Add" Icon="add_circle" ButtonStyle="ButtonStyle.Primary" Click="AddAsync" />
+        </AuthorizeView>
+    </RadzenStack>
+
+    <AppDataGrid @ref="_grid" TItem="Color" Data="_query" RowSelect="OnRowSelect">
+        <Columns>
+            <RadzenDataGridColumn TItem="Color" Property="Color1" Title="Color" SortOrder="SortOrder.Ascending" />
+            <RadzenDataGridColumn TItem="Color" Property="ColorCode" Title="Code" />
+            <RadzenDataGridColumn TItem="Color" Property="CopyToPda" Title="Copy To PDA" Width="140px">
+                <Template>@(context.CopyToPda ? "Yes" : "No")</Template>
+            </RadzenDataGridColumn>
+        </Columns>
+    </AppDataGrid>
+</RadzenCard>
+
+@code {
+    private PMBContext? _db;
+    private AppDataGrid<Color>? _grid;
+    private IQueryable<Color>? _query;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _db = await DbFactory.CreateDbContextAsync();
+        _query = _db.Colors.AsNoTracking();
+    }
+
+    private async Task AddAsync()
+    {
+        var result = await DialogService.OpenDialogAsync<ColorDialog>("Add Color");
+        if (result is true)
+            _db?.ChangeTracker.Clear();
+    }
+
+    private async Task OnRowSelect(Color row)
+    {
+        var result = await DialogService.OpenDialogAsync<ColorDialog>("Edit Color",
+            new Dictionary<string, object?> { ["ColorId"] = row.ColorId });
+        if (result is true)
+            _db?.ChangeTracker.Clear();
+    }
+}
