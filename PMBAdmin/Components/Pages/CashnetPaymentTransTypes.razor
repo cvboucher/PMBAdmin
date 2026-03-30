@@ -1,0 +1,78 @@
+@page "/cashnet-payment-trans-types"
+@page "/cashnet_pmt_cd_trans_type_grid"
+@attribute [Authorize(Policy = AppPermissions.CashnetPaymentTransTypesView)]
+
+@inject IDbContextFactory<PMBContext> DbFactory
+@inject DialogService DialogService
+
+<PageTitle>Cashnet Payment Transaction Types</PageTitle>
+
+<RadzenCard>
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" class="rz-mb-3">
+        <RadzenText Text="Cashnet Payment Transaction Types" Style="font-weight: 600;" />
+        <AuthorizeView Policy="@AppPermissions.CashnetPaymentTransTypesManage">
+            <RadzenButton Text="Add" Icon="add_circle" ButtonStyle="ButtonStyle.Primary" Click="AddAsync" />
+        </AuthorizeView>
+    </RadzenStack>
+
+    <AppDataGrid @ref="_grid" TItem="CashnetPaymentTransType" Data="_query" RowSelect="OnRowSelect">
+        <Columns>
+            <RadzenDataGridColumn TItem="CashnetPaymentTransType" Property="CashnetPaymentCode.PaymentDescription" Title="Cashnet Payment Code">
+                <FilterTemplate>
+                    <RadzenDropDown Data="_paymentCodes" Value="@context.FilterValue" Change="@(value => { context.FilterValue = value; _grid!.FirstPage(true); })" AllowFiltering="true" AllowClear="true" Style="width: 100%" />
+                </FilterTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="CashnetPaymentTransType" Property="CashnetTransType.CashnetTransTypeName" Title="Cashnet Transaction Type">
+                <FilterTemplate>
+                    <RadzenDropDown Data="_transTypes" Value="@context.FilterValue" Change="@(value => { context.FilterValue = value; _grid!.FirstPage(true); })" AllowFiltering="true" AllowClear="true" Style="width: 100%" />
+                </FilterTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="CashnetPaymentTransType" Property="Status.Status1" Title="Status" />
+            <RadzenDataGridColumn TItem="CashnetPaymentTransType" Property="TransactionType.TransactionType1" Title="Transaction Type" />
+            <RadzenDataGridColumn TItem="CashnetPaymentTransType" Property="ReverseFees" Title="Reverse Fees" Width="140px">
+                <Template>@(context.ReverseFees ? "Yes" : "No")</Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="CashnetPaymentTransType" Property="AdditionalTransactionAmount" Title="Additional Transaction Amount" />
+            <RadzenDataGridColumn TItem="CashnetPaymentTransType" Property="AdditionalTransactionType.TransactionType1" Title="Additional Transaction Type" />
+            <RadzenDataGridColumn TItem="CashnetPaymentTransType" Property="DetailCode" Title="Detail Code" />
+        </Columns>
+    </AppDataGrid>
+</RadzenCard>
+
+@code {
+    private PMBContext? _db;
+    private AppDataGrid<CashnetPaymentTransType>? _grid;
+    private IQueryable<CashnetPaymentTransType>? _query;
+    private List<string> _paymentCodes = [];
+    private List<string> _transTypes = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        _db = await DbFactory.CreateDbContextAsync();
+        _query = _db.CashnetPaymentTransTypes
+            .AsNoTracking()
+            .Include(x => x.CashnetPaymentCode)
+            .Include(x => x.CashnetTransType)
+            .Include(x => x.Status)
+            .Include(x => x.TransactionType)
+            .Include(x => x.AdditionalTransactionType);
+
+        _paymentCodes = [.. _db.CashnetPaymentCodes.AsNoTracking().OrderBy(x => x.PaymentDescription).Select(x => x.PaymentDescription)];
+        _transTypes = [.. _db.CashnetTransTypes.AsNoTracking().OrderBy(x => x.CashnetTransTypeName).Select(x => x.CashnetTransTypeName)];
+    }
+
+    private async Task AddAsync()
+    {
+        var result = await DialogService.OpenDialogAsync<CashnetPaymentTransTypeDialog>("Add Cashnet Payment Transaction Type");
+        if (result is true)
+            _db?.ChangeTracker.Clear();
+    }
+
+    private async Task OnRowSelect(CashnetPaymentTransType row)
+    {
+        var result = await DialogService.OpenDialogAsync<CashnetPaymentTransTypeDialog>("Edit Cashnet Payment Transaction Type",
+            new Dictionary<string, object?> { ["CashnetPaymentTransTypeId"] = row.CashnetPaymentTransTypeId });
+        if (result is true)
+            _db?.ChangeTracker.Clear();
+    }
+}

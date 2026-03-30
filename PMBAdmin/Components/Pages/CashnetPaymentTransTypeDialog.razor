@@ -1,0 +1,89 @@
+@inject IDbContextFactory<PMBContext> DbFactory
+@inject DialogService DialogService
+
+<RadzenTemplateForm Data="_model" Submit="@((CashnetPaymentTransType _) => SaveAsync())">
+    <RadzenStack Gap="0.75rem">
+        <RadzenFormField Text="Cashnet Payment Code" AllowFloatingLabel="false">
+            <RadzenDropDown Data="_paymentCodes" TextProperty="PaymentDescription" ValueProperty="CashnetPaymentCodeId" @bind-Value="_model.CashnetPaymentCodeId" Style="width: 100%" AllowFiltering="true" AllowClear="true" />
+        </RadzenFormField>
+        <RadzenFormField Text="Cashnet Transaction Type" AllowFloatingLabel="false">
+            <RadzenDropDown Data="_transTypes" TextProperty="CashnetTransTypeName" ValueProperty="CashnetTransTypeId" @bind-Value="_model.CashnetTransTypeId" Style="width: 100%" AllowFiltering="true" AllowClear="true" />
+        </RadzenFormField>
+        <RadzenFormField Text="Status" AllowFloatingLabel="false">
+            <RadzenDropDown Data="_statuses" TextProperty="Status1" ValueProperty="StatusId" @bind-Value="_model.StatusId" Style="width: 100%" AllowFiltering="true" AllowClear="true" />
+        </RadzenFormField>
+        <RadzenFormField Text="Transaction Type" AllowFloatingLabel="false">
+            <RadzenDropDown Data="_transactionTypes" TextProperty="TransactionType1" ValueProperty="TransactionTypeId" @bind-Value="_model.TransactionTypeId" Style="width: 100%" AllowFiltering="true" AllowClear="true" />
+        </RadzenFormField>
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center">
+            <RadzenCheckBox @bind-Value="_model.ReverseFees" />
+            <RadzenLabel Text="Reverse Fees" />
+        </RadzenStack>
+        <RadzenFormField Text="Additional Transaction Amount" AllowFloatingLabel="false">
+            <RadzenNumeric @bind-Value="_model.AdditionalTransactionAmount" Style="width: 100%" />
+        </RadzenFormField>
+        <RadzenFormField Text="Additional Transaction Type" AllowFloatingLabel="false">
+            <RadzenDropDown Data="_transactionTypes" TextProperty="TransactionType1" ValueProperty="TransactionTypeId" @bind-Value="_model.AdditionalTransactionTypeId" Style="width: 100%" AllowFiltering="true" AllowClear="true" />
+        </RadzenFormField>
+        <RadzenFormField Text="Detail Code" AllowFloatingLabel="false">
+            <RadzenTextBox @bind-Value="_model.DetailCode" Style="width: 100%" />
+        </RadzenFormField>
+    </RadzenStack>
+
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" Gap="0.5rem" class="rz-mt-3">
+        <AuthorizeView Context="authContext" Policy="@AppPermissions.CashnetPaymentTransTypesManage">
+            <RadzenButton Text="Delete" ButtonStyle="ButtonStyle.Danger" Click="DeleteAsync" Visible="@(_model.CashnetPaymentTransTypeId != 0)" />
+            <RadzenButton Text="Save" ButtonStyle="ButtonStyle.Primary" ButtonType="ButtonType.Submit" />
+        </AuthorizeView>
+        <RadzenButton Text="Cancel" ButtonStyle="ButtonStyle.Light" Click="() => DialogService.Close()" />
+    </RadzenStack>
+</RadzenTemplateForm>
+
+@code {
+    [Parameter] public int? CashnetPaymentTransTypeId { get; set; }
+
+    private PMBContext? _db;
+    private CashnetPaymentTransType _model = new() { DetailCode = string.Empty };
+    private List<CashnetPaymentCode> _paymentCodes = [];
+    private List<CashnetTransType> _transTypes = [];
+    private List<Status> _statuses = [];
+    private List<TransactionType> _transactionTypes = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        _db = await DbFactory.CreateDbContextAsync();
+        _paymentCodes = await _db.CashnetPaymentCodes.AsNoTracking().OrderBy(x => x.PaymentDescription).ToListAsync();
+        _transTypes = await _db.CashnetTransTypes.AsNoTracking().OrderBy(x => x.CashnetTransTypeName).ToListAsync();
+        _statuses = await _db.Statuses.AsNoTracking().OrderBy(x => x.Status1).ToListAsync();
+        _transactionTypes = await _db.TransactionTypes.AsNoTracking().OrderBy(x => x.TransactionType1).ToListAsync();
+
+        if (CashnetPaymentTransTypeId.HasValue)
+        {
+            var existing = await _db.CashnetPaymentTransTypes.FirstOrDefaultAsync(x => x.CashnetPaymentTransTypeId == CashnetPaymentTransTypeId.Value);
+            if (existing != null)
+                _model = existing;
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        if (_model.CashnetPaymentTransTypeId == 0)
+            _db!.CashnetPaymentTransTypes.Add(_model);
+        else
+            _db!.CashnetPaymentTransTypes.Update(_model);
+
+        await _db!.SaveChangesAsync();
+        DialogService.Close(true);
+    }
+
+    private async Task DeleteAsync()
+    {
+        var confirmed = await DialogService.Confirm("Delete this cashnet payment transaction type?", "Confirm",
+            new ConfirmOptions { OkButtonText = "Delete", CancelButtonText = "Cancel" });
+        if (confirmed != true) return;
+
+        _db!.CashnetPaymentTransTypes.Remove(_model);
+        await _db.SaveChangesAsync();
+        DialogService.Close(true);
+    }
+}
