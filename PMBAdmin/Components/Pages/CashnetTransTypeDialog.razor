@@ -1,0 +1,61 @@
+@inject IDbContextFactory<PMBContext> DbFactory
+@inject DialogService DialogService
+
+<RadzenTemplateForm Data="_model" Submit="@((CashnetTransType _) => SaveAsync())">
+    <RadzenStack Gap="0.75rem">
+        <RadzenFormField Text="Code" AllowFloatingLabel="false">
+            <RadzenTextBox @bind-Value="_model.CashnetTransTypeCode" Style="width: 100%" />
+        </RadzenFormField>
+        <RadzenFormField Text="Name" AllowFloatingLabel="false">
+            <RadzenTextBox @bind-Value="_model.CashnetTransTypeName" Style="width: 100%" />
+        </RadzenFormField>
+    </RadzenStack>
+
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" Gap="0.5rem" class="rz-mt-3">
+        <AuthorizeView Context="authContext" Policy="@AppPermissions.CashnetTransTypesManage">
+            <RadzenButton Text="Delete" ButtonStyle="ButtonStyle.Danger" Click="DeleteAsync" Visible="@(_model.CashnetTransTypeId != 0)" />
+            <RadzenButton Text="Save" ButtonStyle="ButtonStyle.Primary" ButtonType="ButtonType.Submit" />
+        </AuthorizeView>
+        <RadzenButton Text="Cancel" ButtonStyle="ButtonStyle.Light" Click="() => DialogService.Close()" />
+    </RadzenStack>
+</RadzenTemplateForm>
+
+@code {
+    [Parameter] public int? CashnetTransTypeId { get; set; }
+
+    private PMBContext? _db;
+    private CashnetTransType _model = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _db = await DbFactory.CreateDbContextAsync();
+        if (CashnetTransTypeId.HasValue)
+        {
+            var existing = await _db.CashnetTransTypes.FirstOrDefaultAsync(x => x.CashnetTransTypeId == CashnetTransTypeId.Value);
+            if (existing != null)
+                _model = existing;
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        if (_model.CashnetTransTypeId == 0)
+            _db!.CashnetTransTypes.Add(_model);
+        else
+            _db!.CashnetTransTypes.Update(_model);
+
+        await _db!.SaveChangesAsync();
+        DialogService.Close(true);
+    }
+
+    private async Task DeleteAsync()
+    {
+        var confirmed = await DialogService.Confirm("Delete this cashnet transaction type?", "Confirm",
+            new ConfirmOptions { OkButtonText = "Delete", CancelButtonText = "Cancel" });
+        if (confirmed != true) return;
+
+        _db!.CashnetTransTypes.Remove(_model);
+        await _db.SaveChangesAsync();
+        DialogService.Close(true);
+    }
+}

@@ -1,0 +1,51 @@
+@page "/cashnet-trans-types"
+@page "/cashnet_trans_type_grid"
+@attribute [Authorize(Policy = AppPermissions.CashnetTransTypesView)]
+
+@inject IDbContextFactory<PMBContext> DbFactory
+@inject DialogService DialogService
+
+<PageTitle>Cashnet Transaction Types</PageTitle>
+
+<RadzenCard>
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" class="rz-mb-3">
+        <RadzenText Text="Cashnet Transaction Types" Style="font-weight: 600;" />
+        <AuthorizeView Policy="@AppPermissions.CashnetTransTypesManage">
+            <RadzenButton Text="Add" Icon="add_circle" ButtonStyle="ButtonStyle.Primary" Click="AddAsync" />
+        </AuthorizeView>
+    </RadzenStack>
+
+    <AppDataGrid @ref="_grid" TItem="CashnetTransType" Data="_query" RowSelect="OnRowSelect">
+        <Columns>
+            <RadzenDataGridColumn TItem="CashnetTransType" Property="CashnetTransTypeCode" Title="Code" SortOrder="SortOrder.Ascending" />
+            <RadzenDataGridColumn TItem="CashnetTransType" Property="CashnetTransTypeName" Title="Name" />
+        </Columns>
+    </AppDataGrid>
+</RadzenCard>
+
+@code {
+    private PMBContext? _db;
+    private AppDataGrid<CashnetTransType>? _grid;
+    private IQueryable<CashnetTransType>? _query;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _db = await DbFactory.CreateDbContextAsync();
+        _query = _db.CashnetTransTypes.AsNoTracking();
+    }
+
+    private async Task AddAsync()
+    {
+        var result = await DialogService.OpenDialogAsync<CashnetTransTypeDialog>("Add Cashnet Transaction Type");
+        if (result is true)
+            _db?.ChangeTracker.Clear();
+    }
+
+    private async Task OnRowSelect(CashnetTransType row)
+    {
+        var result = await DialogService.OpenDialogAsync<CashnetTransTypeDialog>("Edit Cashnet Transaction Type",
+            new Dictionary<string, object?> { ["CashnetTransTypeId"] = row.CashnetTransTypeId });
+        if (result is true)
+            _db?.ChangeTracker.Clear();
+    }
+}

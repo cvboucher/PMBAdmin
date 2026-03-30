@@ -35,6 +35,8 @@ public static class AppPermissions
     public const string CashierManage = "Cashier.Manage";
     public const string CashnetPaymentCodesView = "CashnetPaymentCodes.View";
     public const string CashnetPaymentCodesManage = "CashnetPaymentCodes.Manage";
+    public const string CashnetTransTypesView = "CashnetTransTypes.View";
+    public const string CashnetTransTypesManage = "CashnetTransTypes.Manage";
 
     /// <summary>
     /// All defined permissions for enumeration (e.g., admin UI checkboxes).
@@ -65,6 +67,8 @@ public static class AppPermissions
         new("Configuration", CashierManage, "Cashier - Manage"),
         new("Configuration", CashnetPaymentCodesView, "Cashnet Payment Codes - View"),
         new("Configuration", CashnetPaymentCodesManage, "Cashnet Payment Codes - Manage"),
+        new("Configuration", CashnetTransTypesView, "Cashnet Transaction Types - View"),
+        new("Configuration", CashnetTransTypesManage, "Cashnet Transaction Types - Manage"),
     ];
 
     /// <summary>
