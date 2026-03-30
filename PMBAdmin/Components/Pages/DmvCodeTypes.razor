@@ -1,0 +1,51 @@
+@page "/dmv-code-types"
+@page "/dmv_code_type_grid"
+@attribute [Authorize(Policy = AppPermissions.DmvCodeTypesView)]
+
+@inject IDbContextFactory<PMBContext> DbFactory
+@inject DialogService DialogService
+
+<PageTitle>DMV Code Types</PageTitle>
+
+<RadzenCard>
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" class="rz-mb-3">
+        <RadzenText Text="DMV Code Types" Style="font-weight: 600;" />
+        <AuthorizeView Policy="@AppPermissions.DmvCodeTypesManage">
+            <RadzenButton Text="Add" Icon="add_circle" ButtonStyle="ButtonStyle.Primary" Click="AddAsync" />
+        </AuthorizeView>
+    </RadzenStack>
+
+    <AppDataGrid @ref="_grid" TItem="DmvcodeType" Data="_query" RowSelect="OnRowSelect">
+        <Columns>
+            <RadzenDataGridColumn TItem="DmvcodeType" Property="DmvcodeTypeIdentifier" Title="Identifier" SortOrder="SortOrder.Ascending" />
+            <RadzenDataGridColumn TItem="DmvcodeType" Property="DmvcodeType1" Title="DMV Code Type" />
+        </Columns>
+    </AppDataGrid>
+</RadzenCard>
+
+@code {
+    private PMBContext? _db;
+    private AppDataGrid<DmvcodeType>? _grid;
+    private IQueryable<DmvcodeType>? _query;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _db = await DbFactory.CreateDbContextAsync();
+        _query = _db.DmvcodeTypes.AsNoTracking();
+    }
+
+    private async Task AddAsync()
+    {
+        var result = await DialogService.OpenDialogAsync<DmvCodeTypeDialog>("Add DMV Code Type");
+        if (result is true)
+            _db?.ChangeTracker.Clear();
+    }
+
+    private async Task OnRowSelect(DmvcodeType row)
+    {
+        var result = await DialogService.OpenDialogAsync<DmvCodeTypeDialog>("Edit DMV Code Type",
+            new Dictionary<string, object?> { ["DmvcodeTypeId"] = row.DmvcodeTypeId });
+        if (result is true)
+            _db?.ChangeTracker.Clear();
+    }
+}

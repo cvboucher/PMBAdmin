@@ -46,6 +46,10 @@ public static class AppPermissions
     public const string ColorsManage = "Colors.Manage";
     public const string CommentsView = "Comments.View";
     public const string CommentsManage = "Comments.Manage";
+    public const string DmvCodeTypesView = "DmvCodeTypes.View";
+    public const string DmvCodeTypesManage = "DmvCodeTypes.Manage";
+    public const string DmvCodesView = "DmvCodes.View";
+    public const string DmvCodesManage = "DmvCodes.Manage";
 
     /// <summary>
     /// All defined permissions for enumeration (e.g., admin UI checkboxes).
@@ -87,6 +91,10 @@ public static class AppPermissions
         new("Configuration", ColorsManage, "Colors - Manage"),
         new("Configuration", CommentsView, "Comments - View"),
         new("Configuration", CommentsManage, "Comments - Manage"),
+        new("Configuration", DmvCodeTypesView, "DMV Code Types - View"),
+        new("Configuration", DmvCodeTypesManage, "DMV Code Types - Manage"),
+        new("Configuration", DmvCodesView, "DMV Codes - View"),
+        new("Configuration", DmvCodesManage, "DMV Codes - Manage"),
     ];
 
     /// <summary>

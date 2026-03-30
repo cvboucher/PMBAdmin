@@ -1,0 +1,67 @@
+@inject IDbContextFactory<PMBContext> DbFactory
+@inject DialogService DialogService
+
+<RadzenTemplateForm Data="_model" Submit="@((Dmvcode _) => SaveAsync())">
+    <RadzenStack Gap="0.75rem">
+        <RadzenFormField Text="DMV Code Type" AllowFloatingLabel="false">
+            <RadzenDropDown Data="_types" TextProperty="DmvcodeType1" ValueProperty="DmvcodeTypeId" @bind-Value="_model.DmvcodeTypeId" Style="width: 100%" AllowFiltering="true" AllowClear="true" />
+        </RadzenFormField>
+        <RadzenFormField Text="Identifier" AllowFloatingLabel="false">
+            <RadzenTextBox @bind-Value="_model.DmvcodeIdentifier" Style="width: 100%" />
+        </RadzenFormField>
+        <RadzenFormField Text="DMV Code" AllowFloatingLabel="false">
+            <RadzenTextBox @bind-Value="_model.Dmvcode1" Style="width: 100%" />
+        </RadzenFormField>
+    </RadzenStack>
+
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" Gap="0.5rem" class="rz-mt-3">
+        <AuthorizeView Context="authContext" Policy="@AppPermissions.DmvCodesManage">
+            <RadzenButton Text="Delete" ButtonStyle="ButtonStyle.Danger" Click="DeleteAsync" Visible="@(_model.DmvcodeId != 0)" />
+            <RadzenButton Text="Save" ButtonStyle="ButtonStyle.Primary" ButtonType="ButtonType.Submit" />
+        </AuthorizeView>
+        <RadzenButton Text="Cancel" ButtonStyle="ButtonStyle.Light" Click="() => DialogService.Close()" />
+    </RadzenStack>
+</RadzenTemplateForm>
+
+@code {
+    [Parameter] public int? DmvcodeId { get; set; }
+
+    private PMBContext? _db;
+    private Dmvcode _model = new();
+    private List<DmvcodeType> _types = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        _db = await DbFactory.CreateDbContextAsync();
+        _types = await _db.DmvcodeTypes.AsNoTracking().OrderBy(x => x.DmvcodeType1).ToListAsync();
+
+        if (DmvcodeId.HasValue)
+        {
+            var existing = await _db.Dmvcodes.FirstOrDefaultAsync(x => x.DmvcodeId == DmvcodeId.Value);
+            if (existing != null)
+                _model = existing;
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        if (_model.DmvcodeId == 0)
+            _db!.Dmvcodes.Add(_model);
+        else
+            _db!.Dmvcodes.Update(_model);
+
+        await _db!.SaveChangesAsync();
+        DialogService.Close(true);
+    }
+
+    private async Task DeleteAsync()
+    {
+        var confirmed = await DialogService.Confirm("Delete this DMV code?", "Confirm",
+            new ConfirmOptions { OkButtonText = "Delete", CancelButtonText = "Cancel" });
+        if (confirmed != true) return;
+
+        _db!.Dmvcodes.Remove(_model);
+        await _db.SaveChangesAsync();
+        DialogService.Close(true);
+    }
+}

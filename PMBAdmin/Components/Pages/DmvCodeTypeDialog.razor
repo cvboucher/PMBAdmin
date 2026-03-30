@@ -1,0 +1,61 @@
+@inject IDbContextFactory<PMBContext> DbFactory
+@inject DialogService DialogService
+
+<RadzenTemplateForm Data="_model" Submit="@((DmvcodeType _) => SaveAsync())">
+    <RadzenStack Gap="0.75rem">
+        <RadzenFormField Text="Identifier" AllowFloatingLabel="false">
+            <RadzenTextBox @bind-Value="_model.DmvcodeTypeIdentifier" Style="width: 100%" />
+        </RadzenFormField>
+        <RadzenFormField Text="DMV Code Type" AllowFloatingLabel="false">
+            <RadzenTextBox @bind-Value="_model.DmvcodeType1" Style="width: 100%" />
+        </RadzenFormField>
+    </RadzenStack>
+
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" Gap="0.5rem" class="rz-mt-3">
+        <AuthorizeView Context="authContext" Policy="@AppPermissions.DmvCodeTypesManage">
+            <RadzenButton Text="Delete" ButtonStyle="ButtonStyle.Danger" Click="DeleteAsync" Visible="@(_model.DmvcodeTypeId != 0)" />
+            <RadzenButton Text="Save" ButtonStyle="ButtonStyle.Primary" ButtonType="ButtonType.Submit" />
+        </AuthorizeView>
+        <RadzenButton Text="Cancel" ButtonStyle="ButtonStyle.Light" Click="() => DialogService.Close()" />
+    </RadzenStack>
+</RadzenTemplateForm>
+
+@code {
+    [Parameter] public int? DmvcodeTypeId { get; set; }
+
+    private PMBContext? _db;
+    private DmvcodeType _model = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _db = await DbFactory.CreateDbContextAsync();
+        if (DmvcodeTypeId.HasValue)
+        {
+            var existing = await _db.DmvcodeTypes.FirstOrDefaultAsync(x => x.DmvcodeTypeId == DmvcodeTypeId.Value);
+            if (existing != null)
+                _model = existing;
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        if (_model.DmvcodeTypeId == 0)
+            _db!.DmvcodeTypes.Add(_model);
+        else
+            _db!.DmvcodeTypes.Update(_model);
+
+        await _db!.SaveChangesAsync();
+        DialogService.Close(true);
+    }
+
+    private async Task DeleteAsync()
+    {
+        var confirmed = await DialogService.Confirm("Delete this DMV code type?", "Confirm",
+            new ConfirmOptions { OkButtonText = "Delete", CancelButtonText = "Cancel" });
+        if (confirmed != true) return;
+
+        _db!.DmvcodeTypes.Remove(_model);
+        await _db.SaveChangesAsync();
+        DialogService.Close(true);
+    }
+}
