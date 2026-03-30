@@ -39,6 +39,8 @@ public static class AppPermissions
     public const string CashnetTransTypesManage = "CashnetTransTypes.Manage";
     public const string CashnetPaymentTransTypesView = "CashnetPaymentTransTypes.View";
     public const string CashnetPaymentTransTypesManage = "CashnetPaymentTransTypes.Manage";
+    public const string CashnetConfigView = "CashnetConfig.View";
+    public const string CashnetConfigManage = "CashnetConfig.Manage";
 
     /// <summary>
     /// All defined permissions for enumeration (e.g., admin UI checkboxes).
@@ -73,6 +75,8 @@ public static class AppPermissions
         new("Configuration", CashnetTransTypesManage, "Cashnet Transaction Types - Manage"),
         new("Configuration", CashnetPaymentTransTypesView, "Cashnet Payment Transaction Types - View"),
         new("Configuration", CashnetPaymentTransTypesManage, "Cashnet Payment Transaction Types - Manage"),
+        new("Configuration", CashnetConfigView, "Cashnet Config - View"),
+        new("Configuration", CashnetConfigManage, "Cashnet Config - Manage"),
     ];
 
     /// <summary>

@@ -1,0 +1,65 @@
+@page "/cashnet-config"
+@page "/cashnet_config_form"
+@attribute [Authorize(Policy = AppPermissions.CashnetConfigManage)]
+
+@inject IDbContextFactory<PMBContext> DbFactory
+@inject DialogService DialogService
+
+<PageTitle>Cashnet Config</PageTitle>
+
+<RadzenCard>
+    <RadzenStack Gap="0.75rem">
+        <RadzenText Text="Cashnet Config" Style="font-weight: 600;" />
+
+        @if (_model == null)
+        {
+            <RadzenText Text="Loading..." />
+        }
+        else
+        {
+            <RadzenTemplateForm Data="_model" Submit="@((CashnetConfig _) => SaveAsync())">
+                <RadzenStack Gap="0.75rem">
+                    <RadzenFormField Text="Smart Pay Url" AllowFloatingLabel="false">
+                        <RadzenTextBox @bind-Value="_model.SmartPayUrl" Style="width: 100%" />
+                    </RadzenFormField>
+                    <RadzenFormField Text="Offset Detail Code" AllowFloatingLabel="false">
+                        <RadzenTextBox @bind-Value="_model.OffsetDetailCode" Style="width: 100%" />
+                    </RadzenFormField>
+                    <RadzenFormField Text="Admin Detail Code" AllowFloatingLabel="false">
+                        <RadzenTextBox @bind-Value="_model.AdminDetailCode" Style="width: 100%" />
+                    </RadzenFormField>
+                </RadzenStack>
+
+                <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" Gap="0.5rem" class="rz-mt-3">
+                    <AuthorizeView Context="authContext" Policy="@AppPermissions.CashnetConfigManage">
+                        <RadzenButton Text="Save" ButtonStyle="ButtonStyle.Primary" ButtonType="ButtonType.Submit" />
+                    </AuthorizeView>
+                </RadzenStack>
+            </RadzenTemplateForm>
+        }
+    </RadzenStack>
+</RadzenCard>
+
+@code {
+    private PMBContext? _db;
+    private CashnetConfig? _model;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _db = await DbFactory.CreateDbContextAsync();
+        _model = await _db.CashnetConfigs.FirstOrDefaultAsync();
+        if (_model == null)
+        {
+            _model = new CashnetConfig();
+            _db.CashnetConfigs.Add(_model);
+            await _db.SaveChangesAsync();
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        _db!.CashnetConfigs.Update(_model!);
+        await _db!.SaveChangesAsync();
+        await DialogService.Alert("Cashnet config saved.", "Success");
+    }
+}
