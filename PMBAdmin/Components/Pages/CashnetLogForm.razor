@@ -1,0 +1,49 @@
+@page "/cashnet-log/{CashnetLogId:int}"
+@page "/cashnet_log_form"
+@attribute [Authorize(Policy = AppPermissions.CashnetLogsView)]
+
+@inject IDbContextFactory<PMBContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Cashnet Log</PageTitle>
+
+<RadzenCard>
+    <RadzenStack Gap="0.75rem">
+        <RadzenText Text="View Cashnet Log" Style="font-weight: 600;" />
+
+        @if (_model == null)
+        {
+            <RadzenText Text="Loading..." />
+        }
+        else
+        {
+            <RadzenStack Gap="0.5rem">
+                <RadzenText Text=$"Log Date Time: {_model.LogDateTime:g}" />
+                <RadzenText Text=$"IP Address: {_model.Ipaddress}" />
+                <RadzenFormField Text="Query String" AllowFloatingLabel="false">
+                    <RadzenTextArea Value="@_model.QueryString" Style="width: 100%" Rows="10" ReadOnly="true" />
+                </RadzenFormField>
+                <RadzenButton Text="Back" ButtonStyle="ButtonStyle.Light" Click="Back" />
+            </RadzenStack>
+        }
+    </RadzenStack>
+</RadzenCard>
+
+@code {
+    [Parameter] public int? CashnetLogId { get; set; }
+    [SupplyParameterFromQuery(Name = "CasnetLogID")] public int? CashnetLogIdQuery { get; set; }
+
+    private CashnetLog? _model;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var id = CashnetLogId ?? CashnetLogIdQuery;
+        if (!id.HasValue)
+            return;
+
+        await using var db = await DbFactory.CreateDbContextAsync();
+        _model = await db.CashnetLogs.AsNoTracking().FirstOrDefaultAsync(x => x.CasnetLogId == id.Value);
+    }
+
+    private void Back() => NavigationManager.NavigateTo("/cashnet-logs");
+}

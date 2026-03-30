@@ -1,0 +1,69 @@
+@page "/cashnet-logs"
+@page "/cashnet_log_list"
+@attribute [Authorize(Policy = AppPermissions.CashnetLogsView)]
+
+@inject IDbContextFactory<PMBContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Cashnet Logs</PageTitle>
+
+<RadzenCard>
+    <RadzenStack Gap="0.75rem">
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center">
+            <RadzenTextBox @bind-Value="_ipFilter" Placeholder="IP Address" Style="width: 220px" />
+            <RadzenTextBox @bind-Value="_queryFilter" Placeholder="Query String" Style="width: 320px" />
+            <RadzenButton Text="Search" Icon="search" ButtonStyle="ButtonStyle.Primary" Click="SearchAsync" />
+            <RadzenButton Text="Clear" ButtonStyle="ButtonStyle.Light" Click="ClearAsync" />
+        </RadzenStack>
+
+        <AppDataGrid TItem="CashnetLog" Data="_results" RowSelect="OnRowSelect">
+            <Columns>
+                <RadzenDataGridColumn TItem="CashnetLog" Property="LogDateTime" Title="Log Date Time" SortOrder="SortOrder.Descending" />
+                <RadzenDataGridColumn TItem="CashnetLog" Property="Ipaddress" Title="IP Address" />
+                <RadzenDataGridColumn TItem="CashnetLog" Title="Query String">
+                    <Template>
+                        <RadzenButton Text="View" ButtonStyle="ButtonStyle.Light" Click="@(() => OpenLog(context.CasnetLogId))" />
+                    </Template>
+                </RadzenDataGridColumn>
+            </Columns>
+        </AppDataGrid>
+    </RadzenStack>
+</RadzenCard>
+
+@code {
+    private string? _ipFilter;
+    private string? _queryFilter;
+    private List<CashnetLog> _results = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        await SearchAsync();
+    }
+
+    private async Task SearchAsync()
+    {
+        await using var db = await DbFactory.CreateDbContextAsync();
+        var query = db.CashnetLogs.AsNoTracking();
+
+        if (!string.IsNullOrWhiteSpace(_ipFilter))
+            query = query.Where(x => x.Ipaddress.Contains(_ipFilter));
+        if (!string.IsNullOrWhiteSpace(_queryFilter))
+            query = query.Where(x => x.QueryString.Contains(_queryFilter));
+
+        _results = [.. query.OrderByDescending(x => x.LogDateTime)];
+    }
+
+    private async Task ClearAsync()
+    {
+        _ipFilter = null;
+        _queryFilter = null;
+        await SearchAsync();
+    }
+
+    private void OnRowSelect(CashnetLog row) => OpenLog(row.CasnetLogId);
+
+    private void OpenLog(int id)
+    {
+        NavigationManager.NavigateTo($"/cashnet-log/{id}");
+    }
+}
