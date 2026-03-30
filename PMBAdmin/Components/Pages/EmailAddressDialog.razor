@@ -1,0 +1,72 @@
+@inject IDbContextFactory<PMBContext> DbFactory
+@inject DialogService DialogService
+
+<RadzenTemplateForm Data="_model" Submit="@((EmailAddress _) => SaveAsync())">
+    <RadzenStack Gap="0.75rem">
+        <RadzenFormField Text="Agency" AllowFloatingLabel="false">
+            <RadzenDropDown Data="_agencies" TextProperty="Agency1" ValueProperty="AgencyId" @bind-Value="_model.AgencyId" Style="width: 100%" AllowFiltering="true" AllowClear="true" />
+        </RadzenFormField>
+        <RadzenFormField Text="Email Group" AllowFloatingLabel="false">
+            <RadzenDropDown Data="_groups" TextProperty="EmailGroup1" ValueProperty="EmailGroupId" @bind-Value="_model.EmailGroupId" Style="width: 100%" AllowFiltering="true" AllowClear="true" />
+        </RadzenFormField>
+        <RadzenFormField Text="Email Address" AllowFloatingLabel="false">
+            <RadzenTextBox @bind-Value="_model.EmailAddress1" Style="width: 100%" />
+        </RadzenFormField>
+        <RadzenFormField Text="Name" AllowFloatingLabel="false">
+            <RadzenTextBox @bind-Value="_model.Name" Style="width: 100%" />
+        </RadzenFormField>
+    </RadzenStack>
+
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" Gap="0.5rem" class="rz-mt-3">
+        <AuthorizeView Context="authContext" Policy="@AppPermissions.EmailAddressesManage">
+            <RadzenButton Text="Delete" ButtonStyle="ButtonStyle.Danger" Click="DeleteAsync" Visible="@(_model.EmailAddressId != 0)" />
+            <RadzenButton Text="Save" ButtonStyle="ButtonStyle.Primary" ButtonType="ButtonType.Submit" />
+        </AuthorizeView>
+        <RadzenButton Text="Cancel" ButtonStyle="ButtonStyle.Light" Click="() => DialogService.Close()" />
+    </RadzenStack>
+</RadzenTemplateForm>
+
+@code {
+    [Parameter] public int? EmailAddressId { get; set; }
+
+    private PMBContext? _db;
+    private EmailAddress _model = new();
+    private List<Agency> _agencies = [];
+    private List<EmailGroup> _groups = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        _db = await DbFactory.CreateDbContextAsync();
+        _agencies = await _db.Agencies.AsNoTracking().OrderBy(x => x.Agency1).ToListAsync();
+        _groups = await _db.EmailGroups.AsNoTracking().OrderBy(x => x.EmailGroup1).ToListAsync();
+
+        if (EmailAddressId.HasValue)
+        {
+            var existing = await _db.EmailAddresses.FirstOrDefaultAsync(x => x.EmailAddressId == EmailAddressId.Value);
+            if (existing != null)
+                _model = existing;
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        if (_model.EmailAddressId == 0)
+            _db!.EmailAddresses.Add(_model);
+        else
+            _db!.EmailAddresses.Update(_model);
+
+        await _db!.SaveChangesAsync();
+        DialogService.Close(true);
+    }
+
+    private async Task DeleteAsync()
+    {
+        var confirmed = await DialogService.Confirm("Delete this email address?", "Confirm",
+            new ConfirmOptions { OkButtonText = "Delete", CancelButtonText = "Cancel" });
+        if (confirmed != true) return;
+
+        _db!.EmailAddresses.Remove(_model);
+        await _db.SaveChangesAsync();
+        DialogService.Close(true);
+    }
+}

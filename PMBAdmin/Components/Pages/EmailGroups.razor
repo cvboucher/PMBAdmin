@@ -1,0 +1,57 @@
+@page "/email-groups"
+@page "/email_group_grid"
+@attribute [Authorize(Policy = AppPermissions.EmailGroupsView)]
+
+@inject IDbContextFactory<PMBContext> DbFactory
+@inject DialogService DialogService
+
+<PageTitle>Email Groups</PageTitle>
+
+<RadzenCard>
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" class="rz-mb-3">
+        <RadzenText Text="Email Groups" Style="font-weight: 600;" />
+        <AuthorizeView Policy="@AppPermissions.EmailGroupsManage">
+            <RadzenButton Text="Add" Icon="add_circle" ButtonStyle="ButtonStyle.Primary" Click="AddAsync" />
+        </AuthorizeView>
+    </RadzenStack>
+
+    <AppDataGrid @ref="_grid" TItem="EmailGroup" Data="_query" RowSelect="OnRowSelect">
+        <Columns>
+            <RadzenDataGridColumn TItem="EmailGroup" Property="Agency.Agency1" Title="Agency">
+                <FilterTemplate>
+                    <RadzenDropDown Data="_agencyNames" Value="@context.FilterValue" Change="@(value => { context.FilterValue = value; _grid!.FirstPage(true); })" AllowFiltering="true" AllowClear="true" Style="width: 100%" />
+                </FilterTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="EmailGroup" Property="EmailGroup1" Title="Email Group" SortOrder="SortOrder.Ascending" />
+        </Columns>
+    </AppDataGrid>
+</RadzenCard>
+
+@code {
+    private PMBContext? _db;
+    private AppDataGrid<EmailGroup>? _grid;
+    private IQueryable<EmailGroup>? _query;
+    private List<string> _agencyNames = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        _db = await DbFactory.CreateDbContextAsync();
+        _query = _db.EmailGroups.AsNoTracking().Include(x => x.Agency);
+        _agencyNames = [.. _db.Agencies.AsNoTracking().OrderBy(x => x.Agency1).Select(x => x.Agency1)];
+    }
+
+    private async Task AddAsync()
+    {
+        var result = await DialogService.OpenDialogAsync<EmailGroupDialog>("Add Email Group");
+        if (result is true)
+            _db?.ChangeTracker.Clear();
+    }
+
+    private async Task OnRowSelect(EmailGroup row)
+    {
+        var result = await DialogService.OpenDialogAsync<EmailGroupDialog>("Edit Email Group",
+            new Dictionary<string, object?> { ["EmailGroupId"] = row.EmailGroupId });
+        if (result is true)
+            _db?.ChangeTracker.Clear();
+    }
+}

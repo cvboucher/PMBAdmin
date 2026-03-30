@@ -1,0 +1,65 @@
+@page "/email-addresses"
+@page "/email_address_grid"
+@attribute [Authorize(Policy = AppPermissions.EmailAddressesView)]
+
+@inject IDbContextFactory<PMBContext> DbFactory
+@inject DialogService DialogService
+
+<PageTitle>Email Addresses</PageTitle>
+
+<RadzenCard>
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween" class="rz-mb-3">
+        <RadzenText Text="Email Addresses" Style="font-weight: 600;" />
+        <AuthorizeView Policy="@AppPermissions.EmailAddressesManage">
+            <RadzenButton Text="Add" Icon="add_circle" ButtonStyle="ButtonStyle.Primary" Click="AddAsync" />
+        </AuthorizeView>
+    </RadzenStack>
+
+    <AppDataGrid @ref="_grid" TItem="EmailAddress" Data="_query" RowSelect="OnRowSelect">
+        <Columns>
+            <RadzenDataGridColumn TItem="EmailAddress" Property="Agency.Agency1" Title="Agency">
+                <FilterTemplate>
+                    <RadzenDropDown Data="_agencyNames" Value="@context.FilterValue" Change="@(value => { context.FilterValue = value; _grid!.FirstPage(true); })" AllowFiltering="true" AllowClear="true" Style="width: 100%" />
+                </FilterTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="EmailAddress" Property="EmailGroup.EmailGroup1" Title="Email Group">
+                <FilterTemplate>
+                    <RadzenDropDown Data="_groupNames" Value="@context.FilterValue" Change="@(value => { context.FilterValue = value; _grid!.FirstPage(true); })" AllowFiltering="true" AllowClear="true" Style="width: 100%" />
+                </FilterTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="EmailAddress" Property="EmailAddress1" Title="Email Address" />
+            <RadzenDataGridColumn TItem="EmailAddress" Property="Name" Title="Name" />
+        </Columns>
+    </AppDataGrid>
+</RadzenCard>
+
+@code {
+    private PMBContext? _db;
+    private AppDataGrid<EmailAddress>? _grid;
+    private IQueryable<EmailAddress>? _query;
+    private List<string> _agencyNames = [];
+    private List<string> _groupNames = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        _db = await DbFactory.CreateDbContextAsync();
+        _query = _db.EmailAddresses.AsNoTracking().Include(x => x.Agency).Include(x => x.EmailGroup);
+        _agencyNames = [.. _db.Agencies.AsNoTracking().OrderBy(x => x.Agency1).Select(x => x.Agency1)];
+        _groupNames = [.. _db.EmailGroups.AsNoTracking().OrderBy(x => x.EmailGroup1).Select(x => x.EmailGroup1)];
+    }
+
+    private async Task AddAsync()
+    {
+        var result = await DialogService.OpenDialogAsync<EmailAddressDialog>("Add Email Address");
+        if (result is true)
+            _db?.ChangeTracker.Clear();
+    }
+
+    private async Task OnRowSelect(EmailAddress row)
+    {
+        var result = await DialogService.OpenDialogAsync<EmailAddressDialog>("Edit Email Address",
+            new Dictionary<string, object?> { ["EmailAddressId"] = row.EmailAddressId });
+        if (result is true)
+            _db?.ChangeTracker.Clear();
+    }
+}

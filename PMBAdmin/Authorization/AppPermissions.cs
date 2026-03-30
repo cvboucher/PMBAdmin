@@ -50,6 +50,10 @@ public static class AppPermissions
     public const string DmvCodeTypesManage = "DmvCodeTypes.Manage";
     public const string DmvCodesView = "DmvCodes.View";
     public const string DmvCodesManage = "DmvCodes.Manage";
+    public const string EmailGroupsView = "EmailGroups.View";
+    public const string EmailGroupsManage = "EmailGroups.Manage";
+    public const string EmailAddressesView = "EmailAddresses.View";
+    public const string EmailAddressesManage = "EmailAddresses.Manage";
 
     /// <summary>
     /// All defined permissions for enumeration (e.g., admin UI checkboxes).
@@ -95,6 +99,10 @@ public static class AppPermissions
         new("Configuration", DmvCodeTypesManage, "DMV Code Types - Manage"),
         new("Configuration", DmvCodesView, "DMV Codes - View"),
         new("Configuration", DmvCodesManage, "DMV Codes - Manage"),
+        new("Configuration", EmailGroupsView, "Email Groups - View"),
+        new("Configuration", EmailGroupsManage, "Email Groups - Manage"),
+        new("Configuration", EmailAddressesView, "Email Addresses - View"),
+        new("Configuration", EmailAddressesManage, "Email Addresses - Manage"),
     ];
 
     /// <summary>
